@@ -1,3 +1,6 @@
+import genotype.base.CalledVariant;
+import global.Utils;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
@@ -21,7 +24,7 @@ import scala.reflect.ClassTag;
  */
 public class Program {
     
-    public static final int STEPSIZE = 1;
+    public static final int STEPSIZE = 100000;
     
     public static SparkSession spark;
 //    public static JavaSparkContext sc;
@@ -32,7 +35,7 @@ public class Program {
     public static Dataset<Row> getCalledVariantDF() {
         return
             spark.read().jdbc(jdbcURL,
-                    "( select * from called_variant where chr = '1' and block_id = '1-100002' ) t1",
+                    "( select * from called_variant ) t1",
                     new Properties());
     }
     
@@ -43,8 +46,8 @@ public class Program {
 //                .withColumnRenamed("sample_id", "p_sample_id");
     }
     
-    public static Dataset<Row> getChrPosDF( Dataset<Row> cvDF ) {
-        return cvDF.select("chr", "pos", "block_id").distinct();
+    public static Dataset<Row> getVarChrPosDF( Dataset<Row> cvDF ) {
+        return cvDF.select("chr", "pos", "block_id", "variant_id").distinct();
 //                .withColumnRenamed("chr", "p_chr")
 //                .withColumnRenamed("pos", "p_pos")
 //                .withColumnRenamed("block_id", "p_block_id");
@@ -93,6 +96,9 @@ public class Program {
                 blockIdDF.toJavaRDD()
                 .map((Row r) -> r.getString(0))
                 .collect();
+        
+        int numIterations = blockIds.size()/STEPSIZE + ((blockIds.size()%STEPSIZE > 0) ? 1 : 0);
+        System.out.println(">>> Expected number of iterations: "+numIterations);
 
 //        cvDF.unpersist();
 
@@ -108,33 +114,34 @@ public class Program {
                 filteredBlockIdsList.toArray(new String[filteredBlockIdsList.size()]);
 
             String commaSepBlockIds =
-                    Utils.strjoin(filteredBlockIds,", ");
+                    Utils.strjoin(filteredBlockIds,", ","'");
 
             System.out.println(">>> Block iteration ["+begin+","+end+"[");
-            System.out.print("\t> Blocks being analyzed");
-            System.out.println(commaSepBlockIds);
-            //
+//            System.out.print("\t> Blocks being analyzed: \033[90m");
+//            System.out.println(commaSepBlockIds);
+//            System.out.print("\033[m");
+            /* */
 
             // Filter called_variants
             System.out.println("\t> Obtaining called variant subset");
             Dataset<Row> filteredCVDF =
                     cvDF.where(cvDF.col("block_id").isin((Object[])filteredBlockIds));
-            //
+            /* */
             
-            // Build non-carriers list (chr, pos and sample_id)
+            /*  Build non-carriers list (chr, pos and sample_id) */
             System.out.println("\t> Building non-carriers list");
-            Dataset<Row> allPosDF = getChrPosDF(filteredCVDF);
+            Dataset<Row> allVarPosDF = getVarChrPosDF(filteredCVDF);
             
 //            System.out.println(allPosDF.count());
 //            System.out.println(sampleIdDF.count());
             
             Dataset<Row> allSamplePosDF = 
-                allPosDF.join(sampleIdDF, lit(true), "outer");
+                allVarPosDF.join(sampleIdDF, lit(true), "outer");
             
 //            System.out.println(allSamplePosDF.count());
             
             Dataset<Row> simpleVariantDF = filteredCVDF.
-                    select("chr","pos","block_id","sample_id");
+                    select("chr","pos","block_id","variant_id","sample_id");
 //                    .withColumnRenamed("chr", "v_chr")
 //                    .withColumnRenamed("pos", "v_pos")
 //                    .withColumnRenamed("sample_id", "v_sample_id");
@@ -148,42 +155,44 @@ public class Program {
 //                    "left")
 //                    .where("variant_id IS NULL")
 //                    .select("chr","pos","block_id","sample_id").cache();
-            //
+            /* */
                     
 //            simpleVariantDF.sort("v_chr","v_pos").show(100);
-            nonCarrierPosDF.sort("chr","pos").show(100);
-            System.out.println(nonCarrierPosDF.count());
+//            nonCarrierPosDF.sort("chr","pos").show(100);
+//            System.out.println(nonCarrierPosDF.count());
             
 //            System.out.println(simpleVariantDF.count());
 //            System.out.println(nonCarrierPosDF.count());
 
-            // Get read_coverage data from DB
+            /* Get read_coverage data from DB */
             System.out.println("\t> Loading read coverage data");
             Dataset<Row> readCoverageDF =
                     spark.read().jdbc(jdbcURL,
                         "( select * from read_coverage\n" +
                             "where block_id IN ( "+commaSepBlockIds+" )\n" +
-                            "and sample_id IN ( "+Utils.strjoin(sampleIds,", ")+" ) ) t1",
+                            "and sample_id IN ( "+Utils.strjoin(sampleIds,", ","'")+" ) ) t1",
                         new Properties());
-            //
+            /* */
             
 //            readCoverageDF.show();
 
-            // group non-carrier data and read_coverage by (sampl, block)
+            /*  group non-carrier data and read_coverage by (sampl, block) */
             System.out.println("\t> Grouping non-carrier and coverage data");
-
+            // Both nonCarrier and carrier data are keyed by "<block_id>-<sample_id>",
+            //      so we can group with the read_coverage encoded string
+            
             KeyValueGroupedDataset<String, Row> nonCarrierPosGroupedDF = nonCarrierPosDF.groupByKey(
-                    (Row r) -> r.getString(2)+"-"+Integer.toString(r.getInt(3)),
+                    (Row r) -> r.getString(2)+"-"+Integer.toString(r.getInt(4)),
                     Encoders.STRING());
             
             KeyValueGroupedDataset<String, Row> readCoverageGroupedDF = readCoverageDF.groupByKey(
                     (Row r) -> r.getString(0)+"-"+Integer.toString(r.getInt(1)),
                     Encoders.STRING());
-            //
+            /* */
             
             System.out.println("\t> Decompressing coverage data");
 
-            Dataset<Row> nonCarrierDataWithCoverageDF = nonCarrierPosGroupedDF.<Row,Row>cogroup(readCoverageGroupedDF,
+            Dataset<Row> nonCarrierDataWithCoverageDF = nonCarrierPosGroupedDF.cogroup(readCoverageGroupedDF,
                     (String k, Iterator<Row> nonCarriers, Iterator<Row> rcIterator) -> {
                         TreeMap<Short,Short> tm = new TreeMap<>();
                         LinkedList<Row> l = new LinkedList<>();
@@ -196,8 +205,10 @@ public class Program {
                         String[] covPieces = rc.getString(2)
                                 .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
                         
+                        short pos = 0;
                         for(int inx=0;inx<covPieces.length;inx+=2) {
-                            tm.put(Short.parseShort(covPieces[inx]), Utils.getCovValue(covPieces[inx+1].charAt(0)));
+                            tm.put(pos, Utils.getCovValue(covPieces[inx+1].charAt(0)));
+                            pos += Short.parseShort(covPieces[inx]);
                         }
                         
                         long blockStart = Long.parseLong(rc.getString(0).split("-")[1])*1024;
@@ -206,26 +217,27 @@ public class Program {
                             Row r = nonCarriers.next();
                             short offset = (short) (r.getInt(1) - blockStart);
                             l.add(RowFactory.create(
-                                r.getString(0),r.getInt(1),r.getString(2),r.getInt(3),
+                                r.getString(0),r.getInt(1),r.getString(2),r.getInt(3),r.getInt(4),
                                     tm.floorEntry(offset).getValue()
                             ));
                         }
                         
                         return l.iterator();
                     },
-                    RowEncoder.apply(nonCarrierPosDF.schema().add("cov", DataTypes.ShortType)));
+                    RowEncoder.apply(nonCarrierPosDF.schema().add("coverage", DataTypes.ShortType)));
             
             
-            nonCarrierDataWithCoverageDF.show(100);
+//            nonCarrierDataWithCoverageDF.show(100);
+            // This time, nonCarrier and carrier data are keyed by variant_id,
+            //      so we can group with the read_coverage encoded string
             
+            KeyValueGroupedDataset<Integer, Row> nonCarrierDataGroupedDF = nonCarrierDataWithCoverageDF.groupByKey(
+                    (Row r) -> r.getInt(3),
+                    Encoders.INT());
             
-            KeyValueGroupedDataset<String, Row> nonCarrierDataGroupedDF = nonCarrierDataWithCoverageDF.groupByKey(
-                    (Row r) -> r.getString(0)+"-"+Integer.toString(r.getInt(1)),
-                    Encoders.STRING());
-            
-            KeyValueGroupedDataset<String, Row> carrierDataGroupedDF = filteredCVDF.groupByKey(
-                    (Row r) -> r.getString(3)+"-"+Integer.toString(r.getInt(4)),
-                    Encoders.STRING());
+            KeyValueGroupedDataset<Integer, Row> carrierDataGroupedDF = filteredCVDF.groupByKey(
+                    (Row r) -> r.getInt(2),
+                    Encoders.INT());
             
             
             // TODO: build Variant instances
@@ -235,10 +247,37 @@ public class Program {
             //       (List<non-carrier>, List<carrier>)
             //       and outputed as some instance
             
-            // carrierDataGroupedDF.cogroup(nonCarrierDataGroupedDF, ,)
+            Dataset<CalledVariant> calledVariantDataset =
+                carrierDataGroupedDF.cogroup(nonCarrierDataGroupedDF, 
+                    (Integer vid, Iterator<Row> carriers, Iterator<Row> nonCarriers) -> {
+                        ArrayList<CalledVariant> l = new ArrayList<>(1);
+                        l.add(new CalledVariant(vid,carriers,nonCarriers));
+                        return l.iterator();
+                    },Encoders.kryo(CalledVariant.class));
+            
+//            List<CalledVariant> cvList = calledVariantDataset.collectAsList();
+            
+//            System.out.print("Total CalledVariant Instances: ");
+//            System.out.println(cvList.size());
 
+            Dataset<String> outputDataset = calledVariantDataset.flatMap(
+                    (CalledVariant cv) -> cv.getStringRowIterator(),
+                    Encoders.STRING());
+            
+            outputDataset
+                    .coalesce(spark.sparkContext().defaultParallelism())
+                    .write()
+                    .mode(i == 0 ? "overwrite" : "append")
+                    .text("file:///Users/ferocha/igm/PopSeQL/target/output");
+            
+//            for (CalledVariant cv : cvList) {
+//                
+//            }
+            
 
 //            System.exit(-1);
+
+            nonCarrierPosDF.unpersist();
             System.out.println();
             System.out.println();
 
