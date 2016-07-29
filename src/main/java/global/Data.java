@@ -7,7 +7,7 @@ package global;
 
 /**
  *
- * @author ferocha
+ * @author felipe
  */
 public class Data {
     

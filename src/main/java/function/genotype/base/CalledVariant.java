@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package genotype.base;
+package function.genotype.base;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +7,7 @@ import org.apache.spark.sql.Row;
 
 /**
  *
- * @author ferocha
+ * @author felipe
  */
 public class CalledVariant {
     
@@ -40,6 +35,13 @@ public class CalledVariant {
         for(NonCarrier nc : noncarrierMap.values())
             l.add(nc.simpleString(variantId));
         return l.iterator();
+    }
+    
+    // to be appended to instance variable or constructor
+    /// -> triggers vargeno data calculation
+    public CalledVariant withVarGenoData() {
+        
+        return this;
     }
     
 }

@@ -2,7 +2,7 @@ package global;
 
 /**
  *
- * @author ferocha
+ * @author felipe
  */
 import java.util.StringJoiner;
 

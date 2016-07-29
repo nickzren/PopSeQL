@@ -1,4 +1,4 @@
-package genotype.base;
+package function.genotype.base;
 
 import global.Data;
 import java.math.BigDecimal;
@@ -6,7 +6,7 @@ import org.apache.spark.sql.Row;
 
 /**
  *
- * @author ferocha
+ * @author felipe
  */
 public class Carrier extends NonCarrier {
     

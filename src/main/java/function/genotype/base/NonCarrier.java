@@ -1,11 +1,11 @@
-package genotype.base;
+package function.genotype.base;
 
 import global.Data;
 import org.apache.spark.sql.Row;
 
 /**
  *
- * @author ferocha
+ * @author felipe
  */
 public class NonCarrier {
     
