@@ -12,6 +12,7 @@ package com.atav.genotypes;
 
 
 import com.atav.genotypes.conf.Configuration;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
 
 
@@ -27,13 +28,27 @@ public static SparkSession spsn = SparkSession
 
 
 public static void main(String args[]){
+    //Called Vars
     CalledVariant cv = new CalledVariant(spsn);
+    //Read Cov
+    ReadCoverage rc = new ReadCoverage(spsn);
+    
+    //Or use args with a utility to generate filter predicate 
     String limiter=" where block_id IN (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\") ";
-    System.out.println("Grouping started ....");
+
+    System.out.println("Started grouping...");
+    
+    //Get grouped data
     cv.doFilter(limiter);
     cv.doGrouping();
+    rc.doFilter(limiter);
+    rc.doGrouping();
+    
+    //Do join
+    JavaPairRDD p =cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD());
+    
     System.out.println("Done with grouping!!");
-    System.out.println(cv.getGroupedCvPRDD().collect());
+    System.out.println(p.collect());
 }
 
 }
