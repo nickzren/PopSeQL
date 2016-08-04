@@ -7,6 +7,7 @@ package com.atav.genotypes;
 
 import com.atav.genotypes.beans.Variant;
 import com.atav.genotypes.conf.Configuration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -29,12 +30,12 @@ public class CalledVariant {
      *  +------------------------+
         | COLUMN_NAME            |
         +------------------------+
-        | block_id               |
-        | sample_id              |
-        | variant_id             |
-        | chr                    |
-        | pos                    |
-        | ref                    |
+        | 0.block_id               |
+        | 1. sample_id              |
+        | 2 .variant_id             |
+        | 3 .chr     str               |
+        | 4 .pos                    |
+        | 5 .ref str               |
         | alt                    |
         | genotype               |
         | samtools_raw_coverage  |
@@ -98,8 +99,9 @@ public class CalledVariant {
 
     
     public void doFilter(String args) {
-        //For now nothing
+        
         cvQuery = cvQuery + args;
+        cvQuery = "("+ cvQuery +") as t";                
         options.remove("dbtable");
         options.put("dbtable", cvQuery);
     }
@@ -116,7 +118,7 @@ public class CalledVariant {
     public void setcvRDD() {
         if (cvDF == null) {
             setcvDF();
-        }
+        }        
         cvRDD = cvDF.toJavaRDD();
     }
     
@@ -124,10 +126,12 @@ public class CalledVariant {
         if (cvRDD == null) {
             setcvRDD();
         }
-        cvPRDD = cvRDD.mapToPair( (r) -> ( new Tuple2<>(r.getString(1), r)) );
+        cvPRDD = cvRDD.mapToPair((Row r) -> {
+            return new Tuple2<String, Row>(r.getString(0), r);
+        } );
         transCVPRDD=cvPRDD.mapToPair((Tuple2<String, Row> t1) -> {
            Map<String,Variant> m= new HashMap<>();
-           m.put(Integer.toString(t1._2.getInt(3)), new Variant(t1._2)); //Map of Variant_Id and Variant Object
+           m.put(Integer.toString(t1._2.getInt(2)), new Variant(t1._2)); //Map of Variant_Id and Variant Object
            return new Tuple2<String,Map<String, Variant>>(t1._1,m);
        });
     }

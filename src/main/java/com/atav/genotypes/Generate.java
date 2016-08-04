@@ -28,10 +28,12 @@ public static SparkSession spsn = SparkSession
 
 public static void main(String args[]){
     CalledVariant cv = new CalledVariant(spsn);
-    String limiter=" where block_id in (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\");";
+    String limiter=" where block_id IN (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\") ";
+    System.out.println("Grouping started ....");
     cv.doFilter(limiter);
     cv.doGrouping();
-    System.out.println(cv.getGroupedCvPRDD().toString());
+    System.out.println("Done with grouping!!");
+    System.out.println(cv.getGroupedCvPRDD().collect());
 }
 
 }
