@@ -11,9 +11,15 @@ package com.atav.genotypes;
  */
 
 
+import com.atav.genotypes.beans.Variant;
 import com.atav.genotypes.conf.Configuration;
+import com.atav.genotypes.utils.SampleManager;
+import com.atav.genotypes.utils.Utils;
+import java.util.Map;
+import java.util.TreeMap;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
+import scala.Tuple2;
 
 
 public class Generate {
@@ -25,30 +31,35 @@ public static SparkSession spsn = SparkSession
   .appName("Genotype generator")
   .master(Configuration.master)
   .getOrCreate();
+public static String limiter=" where block_id IN (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\") ";
+public static JavaPairRDD<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> joinRes;
+
 
 
 public static void main(String args[]){
+    //Get Samples first
+    SampleManager samp= new SampleManager(spsn);
+    samp.doFiltering(limiter);
+    samp.setSampleIds();
+    
+    
     //Called Vars
     CalledVariant cv = new CalledVariant(spsn);
     //Read Cov
     ReadCoverage rc = new ReadCoverage(spsn);
-    
-    //Or use args with a utility to generate filter predicate 
-    String limiter=" where block_id IN (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\") ";
-
-    System.out.println("Started grouping...");
-    
+    System.out.println("Started grouping...");   
     //Get grouped data
+        //For now assuming data can be filtered independently
     cv.doFilter(limiter);
     cv.doGrouping();
     rc.doFilter(limiter);
     rc.doGrouping();
+    System.out.println("Done with grouping!!");
     
     //Do join
-    JavaPairRDD p =cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD());
-    
-    System.out.println("Done with grouping!!");
-    System.out.println(p.collect());
+    joinRes = cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD());
+    JavaPairRDD.toRDD(joinRes).toJavaRDD().map(Utils.joinMapper);
+    spsn.stop();
 }
 
 }

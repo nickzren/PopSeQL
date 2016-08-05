@@ -17,6 +17,7 @@ import org.apache.spark.sql.Row;
 public class Variant implements Serializable {
     private String variantID;
     private String sampleID;
+    private int pos;
     private Map<String, Carrier> carrierMap;
     private Map<String, NonCarrier> nonCarrierMap;
     private static final long serialVersionUID = 40L;
@@ -26,7 +27,8 @@ public class Variant implements Serializable {
         this.sampleID = Integer.toString(r.getInt(1));
         if (null==this.carrierMap)this.carrierMap = new HashMap<>();
         this.carrierMap.put(this.sampleID, new Carrier(r));
-        if (null== this.nonCarrierMap)this.nonCarrierMap = new HashMap<>();
+        if (null== this.nonCarrierMap)this.nonCarrierMap = new HashMap<>();                
+        this.pos = r.getInt(4);        
     }
 
     public String getSampleID() {
@@ -35,6 +37,14 @@ public class Variant implements Serializable {
 
     public void setSampleID(String sampleID) {
         this.sampleID = sampleID;
+    }
+
+    public int getPos() {
+        return pos;
+    }
+
+    public void setPos(int pos) {
+        this.pos = pos;
     }
     
     

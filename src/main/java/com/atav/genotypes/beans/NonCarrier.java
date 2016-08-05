@@ -14,11 +14,12 @@ import java.io.Serializable;
 public class NonCarrier implements Serializable{
     
     private String sample_id;
-    private Integer coverageVal;
+    private short coverageVal;
+    private short genotype=0;
     
     private static final long serialVersionUID = 41L;
 
-    public NonCarrier(String samp, Integer covVal) {
+    public NonCarrier(String samp, short covVal) {
         this.sample_id = samp;
         this.coverageVal=covVal;
     }
@@ -27,15 +28,25 @@ public class NonCarrier implements Serializable{
         return sample_id;
     }
 
+    public short getGenotype() {
+        return genotype;
+    }
+
+    public void setGenotype(short genotype) {
+        this.genotype = genotype;
+    }
+
+    
+    
     public void setSample_id(String sample_id) {
         this.sample_id = sample_id;
     }
 
-    public Integer getCoverageVal() {
+    public short getCoverageVal() {
         return coverageVal;
     }
 
-    public void setCoverageVal(Integer coverageVal) {
+    public void setCoverageVal(short coverageVal) {
         this.coverageVal = coverageVal;
     }
     
