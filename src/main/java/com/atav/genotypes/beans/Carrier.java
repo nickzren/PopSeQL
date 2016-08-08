@@ -6,6 +6,7 @@
 package com.atav.genotypes.beans;
 
 import java.io.Serializable;
+import org.apache.spark.sql.Row;
 
 /**
  *
@@ -19,7 +20,7 @@ public class Carrier implements Serializable {
     private String blockId;
     private String chr;
     private String ref;
-    private String pos;
+    private int pos;
     private String alt;
     
     private static final long serialVersionUID = 42L;        
@@ -28,6 +29,17 @@ public class Carrier implements Serializable {
     private String qcFailCase;
     private String qcFailCtrl;
 
+    public Carrier(Row r) {
+        this.variantId = Integer.toString(r.getInt(2));
+        this.sampleId = Integer.toString(r.getInt(1));
+        this.blockId = r.getString(0);
+        this.chr = r.getString(3);
+        this.pos = r.getInt(4);
+        this.ref = r.getString(5);
+    }
+
+    
+    
     public String getHaploScore() {
         return haploScore;
     }
@@ -100,11 +112,11 @@ public class Carrier implements Serializable {
         this.ref = ref;
     }
 
-    public String getPos() {
+    public int getPos() {
         return pos;
     }
 
-    public void setPos(String pos) {
+    public void setPos(int pos) {
         this.pos = pos;
     }
 
