@@ -6,6 +6,7 @@ import org.apache.spark.sql.Row;
 
 /**
  *
+ * @author nick
  * @author felipe
  */
 public class Carrier extends NonCarrier {
@@ -44,6 +45,7 @@ public class Carrier extends NonCarrier {
         readPosRankSum = getFloat((Double) r.get(r.fieldIndex("read_pos_rank_sum")));
         mapQualRankSum = getFloat((Double) r.get(r.fieldIndex("map_qual_rank_sum")));
         passFailStatus = r.getString(r.fieldIndex("pass_fail_status"));
+        samplePheno = r.getShort(r.fieldIndex("pheno"));
     }
     
     private float getFloat(Float f) {
@@ -69,5 +71,59 @@ public class Carrier extends NonCarrier {
 
         return f.floatValue();
     }
+    
+    /* Copied from ATAV code */
+    public int getGatkFilteredCoverage() {
+        return gatkFilteredCoverage;
+    }
+
+    public int getReadsRef() {
+        return readsRef;
+    }
+
+    public int getReadsAlt() {
+        return readsAlt;
+    }
+
+    public float getVqslod() {
+        return vqslod;
+    }
+
+    public float getGenotypeQualGQ() {
+        return genotypeQualGQ;
+    }
+
+    public float getStrandBiasFS() {
+        return strandBiasFS;
+    }
+
+    public float getHaplotypeScore() {
+        return haplotypeScore;
+    }
+
+    public float getRmsMapQualMQ() {
+        return rmsMapQualMQ;
+    }
+
+    public float getQualByDepthQD() {
+        return qualByDepthQD;
+    }
+
+    public float getQual() {
+        return qual;
+    }
+
+    public float getReadPosRankSum() {
+        return readPosRankSum;
+    }
+
+    public float getMapQualRankSum() {
+        return mapQualRankSum;
+    }
+
+    public String getPassFailStatus() {
+        return passFailStatus;
+    }
+    /* ---------- */
     
 }

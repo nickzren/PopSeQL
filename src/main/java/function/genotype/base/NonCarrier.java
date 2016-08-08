@@ -5,6 +5,7 @@ import org.apache.spark.sql.Row;
 
 /**
  *
+ * @author nick
  * @author felipe
  */
 public class NonCarrier {
@@ -12,6 +13,7 @@ public class NonCarrier {
     public int sampleId;
     public int genotype;
     public int coverage;
+    public int samplePheno;
     
     public NonCarrier() {   
     }
@@ -19,6 +21,7 @@ public class NonCarrier {
     public NonCarrier(Row r) {
         sampleId = r.getInt(r.fieldIndex("sample_id"));
         coverage = r.getShort(r.fieldIndex("coverage"));
+        samplePheno = r.getShort(r.fieldIndex("pheno"));
         if (coverage == Data.NA) {
             genotype = Data.NA;
         } else {
@@ -32,5 +35,23 @@ public class NonCarrier {
                 Integer.toString(genotype)+","+
                 Integer.toString(coverage);
     }
+    
+    public int getSamplePheno() {
+        return samplePheno;
+    }
+    
+    /* Copied from ATAV code */
+    public int getSampleId() {
+        return sampleId;
+    }
+
+    public int getGenotype() {
+        return genotype;
+    }
+
+    public int getCoverage() {
+        return coverage;
+    }
+    /* ---------- */
     
 }

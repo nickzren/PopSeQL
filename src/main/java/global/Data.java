@@ -11,6 +11,9 @@ package global;
  */
 public class Data {
     
+    public static final int NO_FILTER = Integer.MAX_VALUE;
     public static final int NA = -1;
+    
+    public static final String version = "1.0";
     
 }
