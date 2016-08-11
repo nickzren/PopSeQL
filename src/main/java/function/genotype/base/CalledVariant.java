@@ -32,6 +32,12 @@ public class CalledVariant extends Region {
 //    public String indelType;
     private boolean isIndel;
     
+    public short blockOffset;
+    
+    public CalledVariant() {
+        
+    };
+    
     public CalledVariant(int vid, Iterator<Row> carrierDataIt,Iterator<Row> nonCarrierDataIt) {
         variantId = vid;
         Row r = null;
@@ -53,6 +59,16 @@ public class CalledVariant extends Region {
         
     }
     
+    public void addCarrier(Row r, int sampleId, short pheno) {
+        // TODO: add filter
+        //if(r.getInt(r.fieldIndex("samtools_raw_coverage")) )
+        carrierMap.put(sampleId, new Carrier(r,pheno));
+    }
+    
+    public void addNonCarrier(int sampleId, short coverage, short pheno) {
+        noncarrierMap.put(sampleId, new NonCarrier(sampleId, coverage, pheno));
+    }
+    
     public void addSampleDataToOutput(Output output) {
         for (Carrier c : carrierMap.values()) {
 //            if(c.getCoverage() != Data.NA)
@@ -63,7 +79,7 @@ public class CalledVariant extends Region {
         }
     }
     
-    private void initVariantData(Row r) {
+    public void initVariantData(Row r) {
         chrStr = r.getString(r.fieldIndex("chr"));
         chrNum = intChr();
         
@@ -78,6 +94,8 @@ public class CalledVariant extends Region {
         
         isIndel = allele.length() != refAllele.length();
         
+        // Magic trick to get block offset
+        blockOffset = (short) ((position - 1) & 0x3FF);
         
         initRegion(chrStr,position, position);
         

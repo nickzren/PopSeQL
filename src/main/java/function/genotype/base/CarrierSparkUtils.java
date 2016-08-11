@@ -23,24 +23,24 @@ public class CarrierSparkUtils {
         LinkedList<Column> l = new LinkedList<>();
         
         
-        if(GenotypeLevelFilterCommand.minCaseCoverageCall != Data.NO_FILTER &&
-                GenotypeLevelFilterCommand.minCtrlCoverageCall != Data.NO_FILTER) {
-            l.add(lit(false)
-                    .or(col("pheno").equalTo(Index.CASE).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCaseCoverageCall)) ))
-                    .or(col("pheno").equalTo(Index.CTRL).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCtrlCoverageCall)) ))
-            );
-        } else if ( GenotypeLevelFilterCommand.minCaseCoverageCall != Data.NO_FILTER ) {
-            l.add(lit(false)
-                    .or(col("pheno").equalTo(Index.CASE).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCaseCoverageCall)) ))
-                    .or(col("pheno").equalTo(Index.CTRL) )
-            );
-            
-        } else if ( GenotypeLevelFilterCommand.minCtrlCoverageCall != Data.NO_FILTER ) {
-            l.add(lit(false)
-                    .or(col("pheno").equalTo(Index.CASE) )
-                    .or(col("pheno").equalTo(Index.CTRL).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCtrlCoverageCall)) ))
-            );
-        }
+//        if(GenotypeLevelFilterCommand.minCaseCoverageCall != Data.NO_FILTER &&
+//                GenotypeLevelFilterCommand.minCtrlCoverageCall != Data.NO_FILTER) {
+//            l.add(lit(false)
+//                    .or(col("pheno").equalTo(Index.CASE).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCaseCoverageCall)) ))
+//                    .or(col("pheno").equalTo(Index.CTRL).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCtrlCoverageCall)) ))
+//            );
+//        } else if ( GenotypeLevelFilterCommand.minCaseCoverageCall != Data.NO_FILTER ) {
+//            l.add(lit(false)
+//                    .or(col("pheno").equalTo(Index.CASE).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCaseCoverageCall)) ))
+//                    .or(col("pheno").equalTo(Index.CTRL) )
+//            );
+//            
+//        } else if ( GenotypeLevelFilterCommand.minCtrlCoverageCall != Data.NO_FILTER ) {
+//            l.add(lit(false)
+//                    .or(col("pheno").equalTo(Index.CASE) )
+//                    .or(col("pheno").equalTo(Index.CTRL).and(col(COVERAGE_COL).geq(lit(GenotypeLevelFilterCommand.minCtrlCoverageCall)) ))
+//            );
+//        }
         
         if( GenotypeLevelFilterCommand.varStatus != null ) {
             Column c = col("pass_fail_status").isin((Object[])GenotypeLevelFilterCommand.varStatus);

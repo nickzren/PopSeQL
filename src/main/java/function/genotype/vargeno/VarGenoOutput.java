@@ -36,10 +36,14 @@ public class VarGenoOutput extends Output {
     
     public List<Row> getRows() {
         LinkedList<Row> l = new LinkedList<>();
+        appendRowsToList(l);
+        return l;
+    }
+    
+    public void appendRowsToList(LinkedList<Row> l) {
         for (Carrier c : calledVar.getCarriers()) {
             l.add(getRow(c));
         }
-        return l;
     }
 
     public static String getTitle() {

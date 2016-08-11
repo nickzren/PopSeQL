@@ -29,6 +29,17 @@ public class NonCarrier {
         }
     }
     
+    public NonCarrier(int sample_id, short cov, short pheno) {
+        sampleId = sample_id;
+        coverage = cov;
+        samplePheno = pheno;
+        if (coverage == Data.NA) {
+            genotype = Data.NA;
+        } else {
+            genotype = 0;
+        }
+    }
+    
     public String simpleString(int variantId) {
         return Integer.toString(variantId)+","+
                 Integer.toString(sampleId)+","+

@@ -16,7 +16,7 @@ public class Program {
         PopSpark.init();
 
         if(VarGenoCommand.isListVarGeno)
-            ListVarGeno.run();
+            ListVarGeno.run2();
 
         PopSpark.destroy();
    }

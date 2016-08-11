@@ -21,19 +21,21 @@ import static org.apache.spark.sql.functions.when;
 public class CalledVariantSparkUtils {
 
     public static Dataset<Row> getCalledVariantDF() {
-        return PopSpark.session.read().jdbc(PopSpark.jdbcURL,
-                "( select * from called_variant where chr = '1' and sample_id in ( "+SampleManager.commaSepSampleIds+" ) ) t1",
-                new Properties());
+//        return PopSpark.session.read().jdbc(PopSpark.jdbcURL,
+//                "( select * from called_variant where chr = '1' and sample_id in ( "+SampleManager.commaSepSampleIds+" ) ) t1",
+//                new Properties());
+        return PopSpark.session.read().parquet("/newdb/parquet/called_variant/part*");
     }
     
     public static Dataset<Row> getReadCoverageDF(String[] blockIds) {
-        return PopSpark.session.read().jdbc(PopSpark.jdbcURL,
-                        "( select * from read_coverage\n" +
-                            "where block_id LIKE '1-%' and "+
+//        return PopSpark.session.read().jdbc(PopSpark.jdbcURL,
+//                        "( select * from read_coverage\n" +
+//                            "where block_id LIKE '1-%' and "+
 //                                " block_id IN ( "+commaSepBlockIds+" )\n" +
 //                            "and"+
-                                " sample_id IN ( "+SampleManager.commaSepSampleIds+" ) ) t1",
-                        new Properties());
+//                                " sample_id IN ( "+SampleManager.commaSepSampleIds+" ) ) t1",
+//                        new Properties());
+        return PopSpark.session.read().parquet("/newdb/parquet/read_coverage/part*");
     }
 
     public static Dataset<Row> getSampleIdDF(Dataset<Row> cvDF) {
