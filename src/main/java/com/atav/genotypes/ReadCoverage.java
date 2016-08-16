@@ -93,17 +93,17 @@ public class ReadCoverage {
         transRCPRDD = rcPRDD.mapToPair((Tuple2<String, Row> t1) -> {
             Map<String, TreeMap<Integer, String>> m = new HashMap<>();
             boolean isNum = true;
-            String covKey = "";
+            int covKey = 0;
             TreeMap<Integer, String> res = new TreeMap<>();
-            String[] rcVals = t1._2.getString(2)
+            String[] rcVals = t1._2.getString(2).trim()
                                     .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"); //Split Coverage string
             //Coverage range goes first, Val later
             for (String cov : rcVals) {
                 if (isNum) {
-                    covKey = cov;
+                    covKey += new Integer(cov);
                     isNum = false;
                 } else {
-                    res.put(new Integer(covKey), cov);
+                    res.put(covKey, cov);
                     isNum = true;
                 }
             }

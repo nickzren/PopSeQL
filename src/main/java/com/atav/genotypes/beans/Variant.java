@@ -29,6 +29,7 @@ public class Variant implements Serializable {
         this.carrierMap.put(this.sampleID, new Carrier(r));
         if (null== this.nonCarrierMap)this.nonCarrierMap = new HashMap<>();                
         this.pos = r.getInt(4);        
+        
     }
 
     public String getSampleID() {

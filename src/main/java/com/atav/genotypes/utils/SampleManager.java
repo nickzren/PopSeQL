@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
@@ -24,7 +25,8 @@ public class SampleManager {
             + Configuration.schema + ".read_coverage";
     SparkSession spsn;
     public static List<String> sampleIds;
-    public static Set<String> sampleSet;
+    public static Broadcast<Set<String>> broadCastSamples;
+    
     
     public SampleManager(SparkSession sesh){
         spsn=sesh;
@@ -32,7 +34,6 @@ public class SampleManager {
         options.put("url", Configuration.url);
         options.put("dbtable", "("+ cvQuery+") as t"); //default
         options.put("driver", Configuration.driver);
-        
     }
     
     public void doFiltering(String args){
@@ -44,13 +45,12 @@ public class SampleManager {
 
     public void setSampleIds() {
         SampleManager.sampleIds = fetchSampleIds();
-        sampleSet=new HashSet<>(SampleManager.sampleIds);
+        broadCastSamples= spsn.sparkContext().broadcast(new HashSet<>(SampleManager.sampleIds), scala.reflect.ClassTag$.MODULE$.apply(HashSet.class));
     }
 
     public List<String> getSampleIds() {
         return sampleIds;
     }
-    
     
     
     public List<String> fetchSampleIds(){

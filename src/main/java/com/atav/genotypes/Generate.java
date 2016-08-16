@@ -55,10 +55,10 @@ public static void main(String args[]){
     rc.doFilter(limiter);
     rc.doGrouping();
     System.out.println("Done with grouping!!");
-    
     //Do join
     joinRes = cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD());
-    JavaPairRDD.toRDD(joinRes).toJavaRDD().map(Utils.joinMapper);
+    Utils u = new Utils();
+    System.out.println(JavaPairRDD.toRDD(joinRes).toJavaRDD().map(u.joinMapper).collect());
     spsn.stop();
 }
 

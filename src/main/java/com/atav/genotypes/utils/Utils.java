@@ -7,8 +7,10 @@ package com.atav.genotypes.utils;
 
 import com.atav.genotypes.beans.NonCarrier;
 import com.atav.genotypes.beans.Variant;
+import global.Data;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -19,7 +21,9 @@ import scala.Tuple2;
  *
  * @author kaustubh
  */
-public class Utils {
+public class Utils implements Serializable {
+    private static final long serialVersionUID = 80L;
+    
         public static short getCovValue(char letter) {
         switch (letter) {
             case 'a':
@@ -34,25 +38,45 @@ public class Utils {
             case 'e':
                 return 201;
         }
-    }
-    
-    public static Function< Tuple2<String, Tuple2<
-                                        Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant> joinMapper = (Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> t1) -> {
-                                            String block_id=t1._1;
-                                            //List<Variant> vars=new ArrayList<>(((t1._2)._1).values());
-                                            
-                                            Variant v=new ArrayList<>(((t1._2)._1).values()).get(0);
-                                            
-                                            Set<String> nonCarrierSamps;
-                                            nonCarrierSamps=SampleManager.sampleSet;
-                                            nonCarrierSamps.removeAll(v.getCarrierMap().keySet());
-                                            for (String samp: nonCarrierSamps){
-                                                TreeMap<Integer,String> covMap=((t1._2)._2).get(samp);
-                                                Map.Entry<Integer, String> key=covMap.ceilingEntry(0==v.getPos()%1024?1024:v.getPos()%1024);
-                                                short cv=getCovValue(key.getValue().charAt(0));
-                                                v.getNonCarrierMap().put(samp, new NonCarrier(samp,cv));
-                                            }
-                                            return v;
+    }            
+        
+    public Function< Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant> joinMapper = 
+            new Function<Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant>() {
+                
+            private final Set<String> samples;
+                {
+                    this.samples=new HashSet<>();
+                    this.samples.addAll(SampleManager.broadCastSamples.value());
+                }
+                
+            @Override
+            public Variant call(Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> t1) throws Exception {
+                Variant v=new ArrayList<>(((t1._2)._1).values()).get(0);
+                
+                //if (null!=v.getPos()){
+                    Set<String> nonCarrierSamps=new HashSet<>();
+                    nonCarrierSamps.addAll(samples);
+                    nonCarrierSamps.removeAll(v.getCarrierMap().keySet());
+                    nonCarrierSamps
+                            .stream().forEach((samp) -> {
+                                
+                                if (null!=((t1._2)._2).get(samp)){
+                                v.getNonCarrierMap()
+                                        .put(samp, new NonCarrier(samp,  getCovValue(((t1._2)._2)
+                                                .get(samp)
+                                                .ceilingEntry(0==v.getPos()%1024?1024:v.getPos()%1024)
+                                                .getValue()
+                                                .charAt(0))));
+                                }else{
+                                    short inv=-1;
+                                    v.getNonCarrierMap()
+                                        .put(samp,new NonCarrier(samp,inv));
+                                }
+                            });
+                //}
+                
+                return v;
+            }
         };
 
 }
