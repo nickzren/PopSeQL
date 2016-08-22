@@ -112,7 +112,11 @@ public class ReadCoverage {
             return new Tuple2<String, Map<String, TreeMap<Integer, String>>>(t1._1, m); //Block ID and Sample+Coverage Map
         });
     }
-    
+    public ReadCoverage doGrouping(String lim){
+        doFilter(lim);
+        doGrouping();
+        return this;
+    }
     public void doGrouping(){
         if(rcPRDD==null){
             setrcPRDD();

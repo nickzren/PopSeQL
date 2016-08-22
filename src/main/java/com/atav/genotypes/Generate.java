@@ -32,7 +32,7 @@ public static SparkSession spsn = SparkSession
   .master(Configuration.master)
   .getOrCreate();
 public static String limiter=" where block_id IN (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\") ";
-public static JavaPairRDD<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> joinRes;
+//public static JavaPairRDD<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> joinRes;
 
 
 
@@ -42,23 +42,16 @@ public static void main(String args[]){
     samp.doFiltering(limiter);
     samp.setSampleIds();
     
-    
-    //Called Vars
-    CalledVariant cv = new CalledVariant(spsn);
-    //Read Cov
-    ReadCoverage rc = new ReadCoverage(spsn);
     System.out.println("Started grouping...");   
-    //Get grouped data
-        //For now assuming data can be filtered independently
-    cv.doFilter(limiter);
-    cv.doGrouping();
-    rc.doFilter(limiter);
-    rc.doGrouping();
+    //Called Vars
+    CalledVariant cv = (new CalledVariant(spsn)).doGrouping(limiter);
+    //Read Cov
+    ReadCoverage rc = (new ReadCoverage(spsn)).doGrouping(limiter);    
     System.out.println("Done with grouping!!");
+    VarGenoOutput.testPheno();
     //Do join
-    joinRes = cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD());
     Utils u = new Utils();
-    System.out.println(JavaPairRDD.toRDD(joinRes).toJavaRDD().map(u.joinMapper).collect());
+    System.out.println(JavaPairRDD.toRDD(cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD())).toJavaRDD().map(u.joinMapper).collect());
     spsn.stop();
 }
 

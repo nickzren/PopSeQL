@@ -25,7 +25,7 @@ public class Carrier implements Serializable {
     
     private static final long serialVersionUID = 42L;        
     private String haploScore;
-    private String genotype;
+    private Short genotype;
     private String qcFailCase;
     private String qcFailCtrl;
 
@@ -36,6 +36,7 @@ public class Carrier implements Serializable {
         this.chr = r.getString(3);
         this.pos = r.getInt(4);
         this.ref = r.getString(5);
+        this.genotype= r.getShort(7);
     }
 
     
@@ -48,13 +49,16 @@ public class Carrier implements Serializable {
         this.haploScore = haploScore;
     }
 
-    public String getGenotype() {
+    public Short getGenotype() {
         return genotype;
     }
 
-    public void setGenotype(String genotype) {
+    public void setGenotype(Short genotype) {
         this.genotype = genotype;
     }
+
+
+    
 
     public String getQcFailCase() {
         return qcFailCase;

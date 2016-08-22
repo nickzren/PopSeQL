@@ -5,6 +5,7 @@
  */
 package com.atav.genotypes.beans;
 
+import global.Data;
 import java.io.Serializable;
 
 /**
@@ -15,22 +16,29 @@ public class NonCarrier implements Serializable{
     
     private String sample_id;
     private short coverageVal;
-    private short genotype=0;
+    private int genotype=0;
     
     private static final long serialVersionUID = 41L;
 
     public NonCarrier(String samp, short covVal) {
         this.sample_id = samp;
         this.coverageVal=covVal;
+        if (coverageVal == Data.NA) {
+            genotype = Data.NA;
+        } else {
+            genotype = 0;
+        }
     }
     
     public String getSample_id() {
         return sample_id;
     }
 
-    public short getGenotype() {
+    public int getGenotype() {
         return genotype;
     }
+
+
 
     public void setGenotype(short genotype) {
         this.genotype = genotype;

@@ -136,6 +136,13 @@ public class CalledVariant {
        });
     }
     
+     
+    public CalledVariant doGrouping(String lim) {
+        doFilter(lim);
+        doGrouping();
+        return this;
+    }
+    
     public void doGrouping() {
         if (cvPRDD == null) {
             setcvPRDD();

@@ -1,6 +1,5 @@
 package function.genotype.statistics;
 
-import java.math.BigDecimal;
 import utils.MathManager;
 
 /**

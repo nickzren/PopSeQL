@@ -1,11 +1,15 @@
 package function.variant.base;
 
+import com.atav.genotypes.beans.Carrier;
+import com.atav.genotypes.beans.NonCarrier;
+import com.atav.genotypes.beans.Variant;
 import function.genotype.base.CalledVariant;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.SampleManager;
 import global.Data;
 import global.Index;
 import function.genotype.statistics.HWEExact;
+import java.util.Map;
 import utils.MathManager;
 
 /**
@@ -26,10 +30,27 @@ public class Output /* implements Cloneable */ {
     protected double[] minorHomFreq = new double[2];
     protected double[] hweP = new double[2];
     
+    
+    public Output(){
+        
+    }
+    
     public Output(CalledVariant c) {
         calledVar = c;
     }
-
+    
+    
+    public Output(Variant var) {
+        Map<String, Integer> phenoMap= com.atav.genotypes.utils.SampleManager.broadCastPheno.value();
+        for (Map.Entry<String,Carrier> c : var.getCarrierMap().entrySet()){
+            addSampleGeno(c.getValue().getGenotype(), phenoMap.get(c.getKey()));
+        }
+        for (Map.Entry<String,NonCarrier> nc : var.getNonCarrierMap().entrySet()){
+            addSampleGeno(nc.getValue().getGenotype(), phenoMap.get(nc.getKey()));
+        }
+    }
+    
+    
 //    public CalledVariant getCalledVariant() {
 //        return calledVar;
 //    }

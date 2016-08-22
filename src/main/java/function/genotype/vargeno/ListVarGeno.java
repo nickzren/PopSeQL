@@ -9,27 +9,19 @@ import function.genotype.base.SampleManager;
 import global.Data;
 import global.PopSpark;
 import global.Utils;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
-import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
 import org.apache.spark.sql.types.*;
-import org.apache.spark.storage.StorageLevel;
 import utils.CommonCommand;
 
 /**
