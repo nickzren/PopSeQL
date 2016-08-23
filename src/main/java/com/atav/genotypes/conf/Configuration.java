@@ -20,4 +20,6 @@ public class Configuration {
         public static String logFile = "/usr/local/Cellar/apache-spark/1.6.1/sparkTestLog.txt";
         public static String url = "jdbc:mysql://localhost:3306/" + schema + "?user=" + username + "&password=" + password;
         public static String master = "spark://igm-it-spare.local:7077";
+        public static String csvFilePath= "/Users/kaustubh/Documents/genotypes.csv";
+        
 }

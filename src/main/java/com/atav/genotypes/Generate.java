@@ -47,7 +47,7 @@ public static void main(String args[]){
     //VarGenoOutput.testPheno(samp);
     //Do join
     Utils u = new Utils(samp.getBroadCastPheno());
-    System.out.println(
+    
             JavaPairRDD
                     .toRDD(cv
                             .getGroupedCvPRDD()
@@ -57,8 +57,8 @@ public static void main(String args[]){
                     ).toJavaRDD()
                      .map(u.joinMapper)
                      .map(u.outputMapper)
-                     .collect()
-    );
+                     .saveAsTextFile(Configuration.csvFilePath);
+    
     spsn.stop();
 }
 
