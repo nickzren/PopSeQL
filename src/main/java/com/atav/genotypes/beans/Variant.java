@@ -6,6 +6,7 @@
 package com.atav.genotypes.beans;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.spark.sql.Row;
@@ -21,6 +22,21 @@ public class Variant implements Serializable {
     private String ref;
     private String alt;    
     private int pos;
+    private int samToolsCov;
+    private int gatkFiltCov;
+    private int readsRef;
+    private int readsAlt;
+    private float vqslod;
+    private double genoQualGQ;
+    private double strBiasFS;
+    private double haploScore;
+    private double rmsMapQualMq;
+    private double qualByDepthQD;
+    private BigDecimal qual;
+    private double rdPosRnkSum;
+    private double mapQualRnkSum;
+    private String passFailStatus;
+    private String pheno;
     private Map<String, Carrier> carrierMap;
     private Map<String, NonCarrier> nonCarrierMap;
     private static final long serialVersionUID = 40L;
@@ -40,11 +56,94 @@ public class Variant implements Serializable {
         this.chr=r.getString(3);
         this.alt=r.getString(6);
         this.genotype=r.getInt(7);
-        
-        
+        this.samToolsCov=r.getInt(8);
+        this.gatkFiltCov=r.getInt(9);
+        this.readsAlt=r.getInt(11);
+        this.readsRef=r.getInt(10);
+        this.vqslod=(!r.isNullAt(12))? r.getFloat(12):0f;
+        this.genoQualGQ=r.getDouble(13);
+        this.strBiasFS=r.getDouble(14);
+        this.haploScore=r.getDouble(15);
+        this.rmsMapQualMq=r.getDouble(16);
+        this.qualByDepthQD=r.getDouble(17);
+        this.qual=r.getDecimal(18);
+        this.rdPosRnkSum=(!r.isNullAt(19))?r.getDouble(19):0d;
+        this.mapQualRnkSum=(!r.isNullAt(20))?r.getDouble(20):0d;
+        this.passFailStatus=r.getString(22);
         
     }
 
+    public String getPheno() {
+        return pheno;
+    }
+
+    public void setPheno(String pheno) {
+        this.pheno = pheno;
+    }
+
+    
+    public float getVqslod() {
+        return vqslod;
+    }
+
+    public double getGenoQualGQ() {
+        return genoQualGQ;
+    }
+
+    public double getStrBiasFS() {
+        return strBiasFS;
+    }
+
+    public double getHaploScore() {
+        return haploScore;
+    }
+
+    public double getRmsMapQualMq() {
+        return rmsMapQualMq;
+    }
+
+    public double getQualByDepthQD() {
+        return qualByDepthQD;
+    }
+
+    public BigDecimal getQual() {
+        return qual;
+    }
+
+    public double getRdPosRnkSum() {
+        return rdPosRnkSum;
+    }
+
+    public double getMapQualRnkSum() {
+        return mapQualRnkSum;
+    }
+
+    public String getPassFailStatus() {
+        return passFailStatus;
+    }
+    
+    
+
+    public int getReadsRef() {
+        return readsRef;
+    }
+
+    public int getReadsAlt() {
+        return readsAlt;
+    }
+
+    
+    public int getSamToolsCov() {
+        return samToolsCov;
+    }
+
+    public int getGatkFiltCov() {
+        return gatkFiltCov;
+    }
+
+    
+    
+    
     public int getGenotype() {
         return genotype;
     }

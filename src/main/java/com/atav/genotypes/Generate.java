@@ -11,15 +11,11 @@ package com.atav.genotypes;
  */
 
 
-import com.atav.genotypes.beans.Variant;
 import com.atav.genotypes.conf.Configuration;
 import com.atav.genotypes.utils.SampleManager;
 import com.atav.genotypes.utils.Utils;
-import java.util.Map;
-import java.util.TreeMap;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
-import scala.Tuple2;
 
 
 public class Generate {
@@ -48,10 +44,21 @@ public static void main(String args[]){
     //Read Cov
     ReadCoverage rc = (new ReadCoverage(spsn)).doGrouping(limiter);    
     System.out.println("Done with grouping!!");
-    VarGenoOutput.testPheno();
+    //VarGenoOutput.testPheno(samp);
     //Do join
-    Utils u = new Utils();
-    System.out.println(JavaPairRDD.toRDD(cv.getGroupedCvPRDD().join(rc.getGroupedRCPRDD())).toJavaRDD().map(u.joinMapper).collect());
+    Utils u = new Utils(samp.getBroadCastPheno());
+    System.out.println(
+            JavaPairRDD
+                    .toRDD(cv
+                            .getGroupedCvPRDD()
+                            .join(rc
+                                    .getGroupedRCPRDD()
+                            )
+                    ).toJavaRDD()
+                     .map(u.joinMapper)
+                     .map(u.outputMapper)
+                     .collect()
+    );
     spsn.stop();
 }
 

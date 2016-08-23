@@ -1,7 +1,5 @@
 package function.variant.base;
 
-import com.atav.genotypes.beans.Carrier;
-import com.atav.genotypes.beans.NonCarrier;
 import com.atav.genotypes.beans.Variant;
 import function.genotype.base.CalledVariant;
 import function.genotype.base.GenotypeLevelFilterCommand;
@@ -9,6 +7,7 @@ import function.genotype.base.SampleManager;
 import global.Data;
 import global.Index;
 import function.genotype.statistics.HWEExact;
+import java.util.HashMap;
 import java.util.Map;
 import utils.MathManager;
 
@@ -29,26 +28,67 @@ public class Output /* implements Cloneable */ {
     protected double[] minorAlleleFreq = new double[2];
     protected double[] minorHomFreq = new double[2];
     protected double[] hweP = new double[2];
-    
-    
-    public Output(){
-        
-    }
+    //private Map<String, Integer> phenoMap;
+    private final Map<String, Integer> phenoMap=new HashMap<>();
     
     public Output(CalledVariant c) {
         calledVar = c;
     }
     
-    
-    public Output(Variant var) {
-        Map<String, Integer> phenoMap= com.atav.genotypes.utils.SampleManager.broadCastPheno.value();
-        for (Map.Entry<String,Carrier> c : var.getCarrierMap().entrySet()){
-            addSampleGeno(c.getValue().getGenotype(), phenoMap.get(c.getKey()));
-        }
-        for (Map.Entry<String,NonCarrier> nc : var.getNonCarrierMap().entrySet()){
-            addSampleGeno(nc.getValue().getGenotype(), phenoMap.get(nc.getKey()));
-        }
+//    public final void init(Variant var){
+//     
+//     
+//     var.getCarrierMap().entrySet().stream().forEach((c) -> {
+//         addSampleGeno(c.getValue().getGenotype(),
+//                 phenoMap.get(
+//                         c.getKey()
+//                 ));
+//        });
+//     var.getNonCarrierMap().entrySet().stream().forEach((nc) -> {
+//         addSampleGeno(nc.getValue().getGenotype(), phenoMap.get(nc.getKey()));
+//        });
+//    }
+    public Output() {
+        
     }
+
+    public CalledVariant getCalledVar() {
+        return calledVar;
+    }
+
+    public boolean isIsMinorRef() {
+        return isMinorRef;
+    }
+
+    public int[][] getGenoCount() {
+        return genoCount;
+    }
+
+    public int[] getMinorHomCount() {
+        return minorHomCount;
+    }
+
+    public int[] getMajorHomCount() {
+        return majorHomCount;
+    }
+
+    public double[] getHetFreq() {
+        return hetFreq;
+    }
+
+    public double[] getMinorAlleleFreq() {
+        return minorAlleleFreq;
+    }
+
+    public double[] getMinorHomFreq() {
+        return minorHomFreq;
+    }
+
+    public double[] getHweP() {
+        return hweP;
+    }
+    
+    
     
     
 //    public CalledVariant getCalledVariant() {

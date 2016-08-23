@@ -6,20 +6,17 @@
 package com.atav.genotypes;
 
 import com.atav.genotypes.beans.Variant;
-import function.genotype.base.GenotypeLevelFilterCommand;
-import com.atav.genotypes.utils.SampleManager;
 import function.variant.base.Output;
+import global.Index;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.StringJoiner;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
+import utils.FormatManager;
 
 /**
  *
  * @author kaustubh
  */
-public class VarGenoOutput extends Output implements Serializable {
+public class VarGenoOutput implements Serializable {
    
     /**
      *
@@ -27,16 +24,25 @@ public class VarGenoOutput extends Output implements Serializable {
      */
     private static final long serialVersionUID = 51L;
     private final Variant v;
+    private final Output o ;
+    //private final SampleManager sm;
+    private int[] qcFailSample={0,0}; //This is not being updated for now
+//    public static void testPheno(SampleManager sam){
+//        System.out.println("Fetching Phenotypes .................................");
+//        System.out.println(sam.broadCastPheno.value().toString());
+//    }
     
-    public static void testPheno(){
-        System.out.println("Fetching Phenotypes .................................");
-        System.out.println(SampleManager.broadCastPheno.value().toString());
+    public VarGenoOutput(Variant v, Output o){
+        //super(v);    
+        this.v=v;
+        this.o=o;
+    }
+
+    public int[] getQcFailSample() {
+        return qcFailSample;
     }
     
-    public VarGenoOutput(Variant v){
-        super(v);    
-        this.v=v;    
-    }
+    
     
     /**
      * 
@@ -120,14 +126,44 @@ public class VarGenoOutput extends Output implements Serializable {
        sj.add((v.getRef().trim().length()==1 && v.getAlt().trim().length()==1)?"SNV":"INDEL");
        sj.add(v.getRef());
        sj.add(v.getAlt());
-       // Is Minor Ref
-       sj.add(super.getGenoStr(v.getGenotype()));
+       sj.add(o.isMinorRef() ? "1" : "0");// Is Minor Ref
+       sj.add(o.getGenoStr(v.getGenotype()));
        sj.add(v.getSampleID());
-       sj.add((SampleManager.broadCastPheno.value().get(v.getSampleID())==0)?"case":"ctrl"); //Using Random Phenotypes for now
-       
-       
-       
-       
+       sj.add(v.getPheno()); //Using Random Phenotypes for now
+       sj.add(Integer.toString(o.getMajorHomCount()[Index.CASE]));
+       sj.add(Integer.toString((o.getGenoCount()[Index.HET][Index.CASE])));
+       sj.add(Integer.toString(o.getMinorHomCount()[Index.CASE]));
+       sj.add(String.format("%.0f", o.getMinorHomFreq()[Index.CASE]));
+       sj.add(String.format("%.0f", o.getHetFreq()[Index.CASE]));
+       sj.add(Integer.toString(o.getMajorHomCount()[Index.CTRL]));
+       sj.add(Integer.toString(o.getGenoCount()[Index.HET][Index.CTRL]));
+       sj.add(Integer.toString(o.getMinorHomCount()[Index.CTRL]));
+       sj.add(String.format("%.0f", o.getMinorHomFreq()[Index.CTRL]));
+       sj.add(String.format("%.0f", o.getHetFreq()[Index.CTRL]));
+       sj.add(Integer.toString(o.getGenoCount()[Index.MISSING][Index.CASE]));
+       sj.add(Integer.toString(getQcFailSample()[Index.CASE]));
+       sj.add(Integer.toString(o.getGenoCount()[Index.MISSING][Index.CTRL]));
+       sj.add(Integer.toString(getQcFailSample()[Index.CTRL]));
+       sj.add(Integer.toString(getQcFailSample()[Index.CTRL]));
+       sj.add(String.format("%.0f", o.getMinorAlleleFreq()[Index.CASE]));
+       sj.add(String.format("%.0f", o.getMinorAlleleFreq()[Index.CTRL]));
+       sj.add(String.format("%.0f", o.getHweP()[Index.CASE]));
+       sj.add(String.format("%.0f", o.getHweP()[Index.CTRL]));
+       sj.add(Integer.toString(v.getSamToolsCov()));
+       sj.add(Integer.toString(v.getGatkFiltCov()));
+       sj.add(Integer.toString(v.getReadsAlt()));
+       sj.add(Integer.toString(v.getReadsRef()));
+       sj.add(FormatManager.getPercAltRead(v.getReadsAlt(),v.getGatkFiltCov()));
+       sj.add(Float.toString(v.getVqslod()));
+       sj.add(v.getPassFailStatus());
+       sj.add(Double.toString(v.getGenoQualGQ()));
+       sj.add(Double.toString(v.getStrBiasFS()));
+       sj.add(Double.toString(v.getHaploScore()));
+       sj.add(Double.toString(v.getRmsMapQualMq()));
+       sj.add(Double.toString(v.getQualByDepthQD()));
+       sj.add(v.getQual().toPlainString());
+       sj.add(Double.toString(v.getRdPosRnkSum()));
+       sj.add(Double.toString(v.getMapQualRnkSum()));
        
        return sj.toString();
       }

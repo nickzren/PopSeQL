@@ -5,16 +5,19 @@
  */
 package com.atav.genotypes.utils;
 
+import com.atav.genotypes.VarGenoOutput;
 import com.atav.genotypes.beans.NonCarrier;
 import com.atav.genotypes.beans.Variant;
-import global.Data;
+import function.variant.base.Output;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
 
 /**
@@ -23,6 +26,11 @@ import scala.Tuple2;
  */
 public class Utils implements Serializable {
     private static final long serialVersionUID = 80L;
+    public Broadcast<Map<String,Integer>> broadCastPheno;
+    
+    public Utils(Broadcast<Map<String,Integer>> in){
+        this.broadCastPheno=in;
+    }
     
         public static short getCovValue(char letter) {
         switch (letter) {
@@ -78,5 +86,34 @@ public class Utils implements Serializable {
                 return v;
             }
         };
+    
+    
+     public Function<Variant,String> outputMapper= new Function<Variant, String>() {
+        @Override
+        public String call(Variant t1) {
+            Output o= new Output();
+            t1.getCarrierMap().entrySet().stream().forEach((c) -> {
+                o.addSampleGeno(c.getValue().getGenotype(),
+                        broadCastPheno.value().get(
+                                c.getKey()
+                        ));
+            });
+            t1.getNonCarrierMap().entrySet().stream().forEach((nc) -> {
+                o.addSampleGeno(nc.getValue().getGenotype(), 
+                        broadCastPheno.value().get(
+                                nc.getKey()
+                        ));
+            });
+            t1.setPheno(broadCastPheno.value().get(t1.getSampleID())==0? "case":"ctrl");
+           return (new VarGenoOutput(t1,o)).toString();
+        }
+    };
+             
+             
+             
+             
+             //(Variant t1) -> {
+         //return (new VarGenoOutput(t1)).toString();
+//    };
 
 }
