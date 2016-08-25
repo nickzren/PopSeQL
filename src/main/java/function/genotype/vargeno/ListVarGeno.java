@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.KeyValueGroupedDataset;
@@ -30,22 +31,47 @@ import utils.CommonCommand;
  */
 public class ListVarGeno {
     
-    public static final int STEPSIZE = 1000;
+    // public static final int STEPSIZE = 1000;
+    // No longer used
     
     public static void run2() {
+        
+        ///////////////////
+        // Handle samples
+        ///////////////////
+        
+        // Collect sample_id and pheno list from file
         System.out.println(">>> Loading samples file");
         
         Dataset<Row> sampleDF = SampleManager.readSamplesFile(GenotypeLevelFilterCommand.sampleFile);
         
         final HashMap<Integer,Short> sampleMap = new HashMap<>();
         
+        // Build a map
         for (Row r : sampleDF.collectAsList()) {
             sampleMap.put(r.getInt(0), r.getShort(1));
         }
-            
+         
+        // Broadcast map
+        Broadcast<HashMap<Integer,Short>> sampleMapBroadcast = PopSpark.context.broadcast(sampleMap);
         
         ///////////////////
+        // Handle coverage filters
+        ///////////////////
         
+        // Broadcast coverage filters (which are the only ones not filtered using DataFrames filtering)
+        int[] covCallFilters =
+            {GenotypeLevelFilterCommand.minCtrlCoverageCall,GenotypeLevelFilterCommand.minCaseCoverageCall};
+        int[] covNoCallFilters =
+            {GenotypeLevelFilterCommand.minCtrlCoverageNoCall,GenotypeLevelFilterCommand.minCaseCoverageNoCall};
+        
+        Broadcast<int[]> covCallFiltersBroadcast = PopSpark.context.broadcast(covCallFilters);
+        Broadcast<int[]> covNoCallFiltersBroadcast = PopSpark.context.broadcast(covNoCallFilters);
+        
+        ///////////////////
+        // Load and filter called_variant data
+        ///////////////////
+                
         System.out.println(">>> Loading called variant data");
         
         Dataset<Row> cvDF = CalledVariantSparkUtils.getCalledVariantDF();
@@ -54,11 +80,15 @@ public class ListVarGeno {
         
         
         ///////////////////
+        // Load read_coverage data
+        ///////////////////
         
         System.out.println("\t> Loading read coverage data");
         Dataset<Row> readCoverageDF =
                 CalledVariantSparkUtils.getReadCoverageDF(null);
         
+        ///////////////////
+        // Set block_id as grouping key
         ///////////////////
         
         KeyValueGroupedDataset<String, Row> CVGroupedDF = filteredCVDF.groupByKey(
@@ -69,12 +99,21 @@ public class ListVarGeno {
                 (Row r) -> r.getString(0),
                 Encoders.STRING());
         
+        ///////////////////
+        // Perform cogrouping
+        ///////////////////
+        
+        // The cogrouping already computes all variants inside each block
+        // The function below will be called once and only once for each block_id
         
         Dataset<Row> outputDF = CVGroupedDF.cogroup( readCoverageGroupedDF,
                 (String k, Iterator<Row> cvIterator, Iterator<Row> rcIterator) -> {
-                    System.out.println("Processing "+k);
+                    CalledVariantSparkUtils.initCovFilters(covCallFiltersBroadcast, covNoCallFiltersBroadcast);
+                    
+//                    System.out.println("Processing "+k);
                     /* Parse coverage blocks */
                     HashMap<Integer,TreeMap<Short,Short>> sampleCovMapMap = new HashMap<>();
+                    // \-> Maps each sample_id to a tree map that maps the block offset to the coverage value
                     while(rcIterator.hasNext()) {
                         Row covBlockRow = rcIterator.next();
                         int sampleId = covBlockRow.getInt(1);
@@ -94,9 +133,20 @@ public class ListVarGeno {
                     /* ------- */
 
                     LinkedList<Row> outputRows = new LinkedList<>();
+                    // \-> List that holds output rows
 
                     HashMap<Integer,HashMap<Integer,Short>> variantSamplePhenoMapMap = new HashMap<>();
+                    // \-> Maps variant_id to a sampleMap copy
+                    //      (a map that maps sample_id to pheno)
+                    // There will be one copy for each variant,
+                    //      that is used to keep track of the non-carriers to be created
+                    // Such copies are created by cloning the broadcasted value
+                    
                     HashMap<Integer,CalledVariant> calledVariantMap = new HashMap<>();
+                    // \-> Maps the variant_id to the CalledVariant object
+                    
+                    // Iterate thru called_variant rows and add its  carrier data to the respective CalledVariant object
+                    // (create one object, if it is being seen for the first time)
                     while(cvIterator.hasNext()) {
                         Row cvRow = cvIterator.next();
 
@@ -109,7 +159,7 @@ public class ListVarGeno {
                             samplePhenoMap = variantSamplePhenoMapMap.get(variantId);
                             calledVariant = calledVariantMap.get(variantId);
                         } else {
-                            samplePhenoMap = (HashMap<Integer,Short>) sampleMap.clone();
+                            samplePhenoMap = (HashMap<Integer,Short>) sampleMapBroadcast.value().clone();
                             variantSamplePhenoMapMap.put(variantId, samplePhenoMap);
                             calledVariant = new CalledVariant();
                             calledVariant.initVariantData(cvRow);
@@ -121,42 +171,56 @@ public class ListVarGeno {
                         samplePhenoMap.remove(sampleId);
                     }
 
+                    // For each variant that was read, get the sample map copy, which,
+                    //      at this point, only contains the samples that are non-carriers
                     for( Map.Entry<Integer, HashMap<Integer, Short>> samplePhenoMapEntry : variantSamplePhenoMapMap.entrySet()) {
                         int variantId = samplePhenoMapEntry.getKey();
                         HashMap<Integer, Short> samplePhenoMap = samplePhenoMapEntry.getValue();
-
+                        
+                        // Get CalledVariant object
                         CalledVariant calledVariant = calledVariantMap.get(variantId);
 
+                        // For each non sample that is a non-carrier, retrieve the coverage
+                        //      and create a NonCarrier object
                         for (Map.Entry<Integer,Short> samplePhenoEntry : samplePhenoMap.entrySet() ) {
                             int sampleId = samplePhenoEntry.getKey();
                             short pheno = samplePhenoEntry.getValue();
 
                             short coverage;
-                            if(sampleCovMapMap.containsKey(sampleId))
+                            if(sampleCovMapMap.containsKey(sampleId)) {
                                 coverage = sampleCovMapMap.get(sampleId).floorEntry(calledVariant.blockOffset).getValue();
-                            else
-                                coverage = Data.NA;
+                                calledVariant.addNonCarrier(sampleId, coverage, pheno);
+                            }
+//                            else
+//                                coverage = Data.NA;
 
-                            calledVariant.addNonCarrier(sampleId, coverage, pheno);
+//                            calledVariant.addNonCarrier(sampleId, coverage, pheno);
                         }
 
+                        // Build output
                         VarGenoOutput out = new VarGenoOutput(calledVariant);
                         calledVariant.addSampleDataToOutput(out);
                         out.calculate();
+                        
+                        // Append output rows to the output list
                         out.appendRowsToList(outputRows);
-
                     }
-                    
-                    System.out.println("Size: "+Integer.toString(outputRows.size()));
 
                     return outputRows.iterator();
         },
-        RowEncoder.apply(VarGenoOutput.getSchema()));
+        RowEncoder.apply( VarGenoOutput.getSchema() ) );
         
+        ///////////////////
+        // Filter and output data
+        ///////////////////
+        
+        // Filter rows based on output filters
         outputDF = CalledVariantSparkUtils.applyOutputFilters(outputDF);
-            
+        
+        // Drop columns that are used for output filters only
         outputDF = outputDF.drop(VarGenoOutput.colsToBeDropped);
 
+        // Write output
         outputDF
                 .coalesce( PopSpark.session.sparkContext().defaultParallelism() )
                 .write()
@@ -172,7 +236,8 @@ public class ListVarGeno {
         
     }
     
-    public static void run() {
+    
+    public static void run() { // No longer used
         System.out.println(">>> Loading samples file");
         
         Dataset<Row> sampleDF = SampleManager.readSamplesFile(GenotypeLevelFilterCommand.sampleFile);

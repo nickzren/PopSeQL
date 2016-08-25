@@ -1,5 +1,6 @@
 package global;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
 /**
@@ -9,6 +10,7 @@ import org.apache.spark.sql.SparkSession;
 public class PopSpark {
 
     public static SparkSession session;
+    public static JavaSparkContext context;
     public static String jdbcURL = "jdbc:mysql://localhost:3306/annodb?user=test&password=test";
     
     
@@ -16,7 +18,10 @@ public class PopSpark {
         PopSpark.session = SparkSession.builder()
                 .appName("PopSeQL")
                 .config("spark.sql.crossJoin.enabled", "true")
+                .config("spark.shuffle.spill.compress","false")
                 .getOrCreate();
+        PopSpark.context = new JavaSparkContext(session.sparkContext());
+        
     }
     
     public static void destroy() {

@@ -112,7 +112,8 @@ public class CarrierSparkUtils {
         
         // if there is some filter to be applied, build where clause
         if(l.size() > 0) {
-            Column whereCondition = l.pop();
+//            Column whereCondition = l.pop();
+            Column whereCondition = lit(true);
             while(l.size() > 0)
                 whereCondition = whereCondition.and(l.pop());
             return carrierDF.withColumn(COVERAGE_COL,

@@ -6,6 +6,7 @@ import global.PopSpark;
 import global.Utils;
 import java.util.LinkedList;
 import java.util.Properties;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -19,23 +20,35 @@ import static org.apache.spark.sql.functions.when;
  * @author felipe
  */
 public class CalledVariantSparkUtils {
+    
+    public static int[] covCallFilter;
+    public static int[] covNoCallFilter;
+    
+    public static void initCovFilters(Broadcast<int[]> minCovCallBr, Broadcast<int[]> minCovNoCallBr) {
+        covCallFilter = minCovCallBr.value();
+        covNoCallFilter = minCovNoCallBr.value();
+    }
 
     public static Dataset<Row> getCalledVariantDF() {
+        
+        // Uncomment this to read called_variant table from JDBC
 //        return PopSpark.session.read().jdbc(PopSpark.jdbcURL,
-//                "( select * from called_variant where chr = '1' and sample_id in ( "+SampleManager.commaSepSampleIds+" ) ) t1",
+//                "( select * from called_variant ) t1",
 //                new Properties());
-        return PopSpark.session.read().parquet("/newdb/parquet/called_variant/part*");
+
+        // Set called_variant parquet filepath here
+        return PopSpark.session.read().parquet("/popseql/igm_ctrl/called_variant/part*");
     }
     
     public static Dataset<Row> getReadCoverageDF(String[] blockIds) {
+        
+        // Uncomment this to read read_coverage table from JDBC
 //        return PopSpark.session.read().jdbc(PopSpark.jdbcURL,
-//                        "( select * from read_coverage\n" +
-//                            "where block_id LIKE '1-%' and "+
-//                                " block_id IN ( "+commaSepBlockIds+" )\n" +
-//                            "and"+
-//                                " sample_id IN ( "+SampleManager.commaSepSampleIds+" ) ) t1",
+//                        "( select * from read_coverage ) t1",
 //                        new Properties());
-        return PopSpark.session.read().parquet("/newdb/parquet/read_coverage/part*");
+
+        // Set read_coverage parquet filepath here
+        return PopSpark.session.read().parquet("/popseql/igm_ctrl/read_coverage/part*");
     }
 
     public static Dataset<Row> getSampleIdDF(Dataset<Row> cvDF) {
@@ -52,10 +65,14 @@ public class CalledVariantSparkUtils {
     
     public static Dataset<Row> applyOutputFilters(Dataset<Row> outputDF) {
         LinkedList<Column> l = new LinkedList<>();
-        if(GenotypeLevelFilterCommand.minCtrlMaf != Data.NO_FILTER)
+        if(GenotypeLevelFilterCommand.minCtrlMaf != Data.NO_FILTER) {
             l.add(col("Ctrl Maf").geq(GenotypeLevelFilterCommand.minCtrlMaf));
-        if(GenotypeLevelFilterCommand.maxCtrlMaf != Data.NO_FILTER)
+        }
+        if(GenotypeLevelFilterCommand.maxCtrlMaf != Data.NO_FILTER) {
             l.add(col("Ctrl Maf").leq(GenotypeLevelFilterCommand.maxCtrlMaf));
+            System.out.print("filter: ");
+            System.out.println(GenotypeLevelFilterCommand.maxCtrlMaf);
+        }
         if(GenotypeLevelFilterCommand.maxQcFailSample != Data.NO_FILTER)
             l.add(col("QC Fail Case").plus(col("QC Fail Ctrl")).leq(GenotypeLevelFilterCommand.maxQcFailSample));
         

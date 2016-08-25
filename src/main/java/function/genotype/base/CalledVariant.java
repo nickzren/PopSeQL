@@ -3,6 +3,7 @@ package function.genotype.base;
 import function.variant.base.Output;
 import function.variant.base.Region;
 import global.Data;
+import global.Index;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
@@ -20,7 +21,6 @@ public class CalledVariant extends Region {
 //    private int[] genotype = new int[SampleManager.getListSize()];
 //    private int[] coverage = new int[SampleManager.getListSize()];
     private int[] qcFailSample = {0,0};
-    
     
     public int variantId;
     public String variantIdStr;
@@ -60,12 +60,32 @@ public class CalledVariant extends Region {
     }
     
     public void addCarrier(Row r, int sampleId, short pheno) {
-        // TODO: add filter
-        //if(r.getInt(r.fieldIndex("samtools_raw_coverage")) )
+        int coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
+        
+        System.out.println("filter!: "+Integer.toString(CalledVariantSparkUtils.covCallFilter[Index.CASE]));
+        
+        if (coverage == Data.NA) {
+            qcFailSample[pheno]++;
+            return;
+        }
+        
+        if (CalledVariantSparkUtils.covCallFilter[pheno] != Data.NO_FILTER) {                
+            if(coverage < CalledVariantSparkUtils.covCallFilter[pheno]) {
+                qcFailSample[pheno]++;
+                return;
+            }
+        }
+        
         carrierMap.put(sampleId, new Carrier(r,pheno));
     }
     
     public void addNonCarrier(int sampleId, short coverage, short pheno) {
+        if (CalledVariantSparkUtils.covNoCallFilter[pheno] != Data.NO_FILTER) {                
+            if(coverage < CalledVariantSparkUtils.covNoCallFilter[pheno]) {
+                return;
+            }
+        }
+        
         noncarrierMap.put(sampleId, new NonCarrier(sampleId, coverage, pheno));
     }
     

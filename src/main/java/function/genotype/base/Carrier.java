@@ -55,7 +55,7 @@ public class Carrier extends NonCarrier {
         gatkFilteredCoverage = r.getInt(r.fieldIndex("gatk_filtered_coverage"));
         readsRef = r.getInt(r.fieldIndex("reads_ref"));
         readsAlt = r.getInt(r.fieldIndex("reads_alt"));
-        vqslod = getFloat((Float) r.get(r.fieldIndex("vqslod")));
+        vqslod = getFloat((Double) r.get(r.fieldIndex("vqslod")));
         genotypeQualGQ = getFloat((Double) r.get(r.fieldIndex("genotype_qual_GQ")));
         strandBiasFS = getFloat((Double) r.get(r.fieldIndex("strand_bias_FS")));
         haplotypeScore = getFloat((Double) r.get(r.fieldIndex("haplotype_score")));
