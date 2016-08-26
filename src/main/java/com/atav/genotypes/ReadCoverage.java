@@ -40,10 +40,10 @@ public class ReadCoverage {
     private String cvQuery = "Select * from " + Configuration.schema + ".read_coverage";
     private SparkSession spsn;
     
-    private Dataset<Row> rcDF;
-    private JavaRDD<Row> rcRDD;
-    private JavaPairRDD<String, Row> rcPRDD;
-    private JavaPairRDD<String, Map<String,TreeMap<Integer,String>>> transRCPRDD;
+//    private Dataset<Row> rcDF;
+//    private JavaRDD<Row> rcRDD;
+//    private JavaPairRDD<String, Row> rcPRDD;
+//    private JavaPairRDD<String, Map<String,TreeMap<Integer,String>>> transRCPRDD;
     private JavaPairRDD<String, Map<String, TreeMap<Integer,String>>> groupedRCPRDD;
     
     public ReadCoverage(SparkSession sesh){
@@ -63,71 +63,126 @@ public class ReadCoverage {
         options.put("dbtable", cvQuery);
     }
 
-    public Dataset<Row> getRcDF() {
-        return rcDF;
-    }
+//    public Dataset<Row> getRcDF() {
+//        return rcDF;
+//    }
 
-    public void setRcDF() {
-        rcDF = spsn
-                .read()
-                .format("jdbc")
-                .options(options)
-                .load();
-    }
+//    public void setRcDF() {
+//        rcDF = spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load()
+//                .coalesce(2048);
+//    }
     
-    public void setrcRDD(){
-     if (rcDF==null){
-         setRcDF();
-     }
-     rcRDD=rcDF.toJavaRDD();
-    }
+//    public void setrcRDD(){
+//     if (rcDF==null){
+//         setRcDF();
+//     }
+//     rcRDD=spsn
+//             .read()
+//             .format("jdbc")
+//             .options(options)
+//             .load()
+//             .coalesce(2048)
+//             .toJavaRDD();
+//    }
     
-    public void setrcPRDD(){
-        if(rcRDD==null){
-            setrcRDD();
-        }
-        rcPRDD=rcRDD.mapToPair((Row r) -> {
-            return new Tuple2<String, Row>(r.getString(0), r); // BlockID and Row
-        } );
-        
-        transRCPRDD = rcPRDD.mapToPair((Tuple2<String, Row> t1) -> {
-            Map<String, TreeMap<Integer, String>> m = new HashMap<>();
-            boolean isNum = true;
-            int covKey = 0;
-            TreeMap<Integer, String> res = new TreeMap<>();
-            String[] rcVals = t1._2.getString(2).trim()
-                                    .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"); //Split Coverage string
-            //Coverage range goes first, Val later
-            for (String cov : rcVals) {
-                if (isNum) {
-                    covKey += new Integer(cov);
-                    isNum = false;
-                } else {
-                    res.put(covKey, cov);
-                    isNum = true;
-                }
-            }
-            m.put(Integer.toString(t1._2.getInt(1)), //Sample ID
-                    res); //Coverage TreeMap
-            return new Tuple2<String, Map<String, TreeMap<Integer, String>>>(t1._1, m); //Block ID and Sample+Coverage Map
-        });
-    }
+//    public void setrcPRDD(){
+//        if(rcRDD==null){
+//            setrcRDD();
+//        }
+//        rcPRDD=spsn
+//             .read()
+//             .format("jdbc")
+//             .options(options)
+//             .load()
+//             .coalesce(2048)
+//             .toJavaRDD()
+//             .mapToPair((Row r) -> {
+//            return new Tuple2<String, Row>(r.getString(0), r); // BlockID and Row
+//        } );
+//        
+//        transRCPRDD = spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load()
+//                .coalesce(2048)
+//                .toJavaRDD()
+//                .mapToPair((Row r) -> {
+//                    return new Tuple2<String, Row>(r.getString(0), r); // BlockID and Row
+//                })
+//                .mapToPair((Tuple2<String, Row> t1) -> {
+//                    Map<String, TreeMap<Integer, String>> m = new HashMap<>();
+//                    boolean isNum = true;
+//                    int covKey = 0;
+//                    TreeMap<Integer, String> res = new TreeMap<>();
+//                    String[] rcVals = t1._2.getString(2).trim()
+//                            .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"); //Split Coverage string
+//                    //Coverage range goes first, Val later
+//                    for (String cov : rcVals) {
+//                        if (isNum) {
+//                            covKey += new Integer(cov);
+//                            isNum = false;
+//                        } else {
+//                            res.put(covKey, cov);
+//                            isNum = true;
+//                        }
+//                    }
+//                    m.put(Integer.toString(t1._2.getInt(1)), //Sample ID
+//                            res); //Coverage TreeMap
+//                    return new Tuple2<String, Map<String, TreeMap<Integer, String>>>(t1._1, m); //Block ID and Sample+Coverage Map
+//                });
+//    }
     public ReadCoverage doGrouping(String lim){
         doFilter(lim);
         doGrouping();
         return this;
     }
     public void doGrouping(){
-        if(rcPRDD==null){
-            setrcPRDD();
-        }
+//        if(rcPRDD==null){
+//            setrcPRDD();
+//        }
         
-        groupedRCPRDD=transRCPRDD.reduceByKey((Map<String, TreeMap<Integer, String>> t1, Map<String, TreeMap<Integer, String>> t2) -> {
-            Map<String, TreeMap<Integer, String>> r= new HashMap<>();
-            r.putAll(t1);
-            r.putAll(t2);
-            return r;
-        });
+        groupedRCPRDD = spsn
+                .read()
+                .format("jdbc")
+                .options(options)
+                .load()
+                .coalesce(2048)
+                .toJavaRDD()
+                .mapToPair((Row r) -> {
+                    return new Tuple2<String, Row>(r.getString(0), r); // BlockID and Row
+                })
+                .mapToPair((Tuple2<String, Row> t1) -> {
+                    Map<String, TreeMap<Integer, String>> m = new HashMap<>();
+                    boolean isNum = true;
+                    int covKey = 0;
+                    TreeMap<Integer, String> res = new TreeMap<>();
+                    String[] rcVals = t1._2.getString(2).trim()
+                            .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"); //Split Coverage string
+                    //Coverage range goes first, Val later
+                    for (String cov : rcVals) {
+                        if (isNum) {
+                            covKey += new Integer(cov);
+                            isNum = false;
+                        } else {
+                            res.put(covKey, cov);
+                            isNum = true;
+                        }
+                    }
+                    m.put(Integer.toString(t1._2.getInt(1)), //Sample ID
+                            res); //Coverage TreeMap
+                    return new Tuple2<String, Map<String, TreeMap<Integer, String>>>(t1._1, m); //Block ID and Sample+Coverage Map
+                })
+                .reduceByKey((Map<String, TreeMap<Integer, String>> t1, Map<String, TreeMap<Integer, String>> t2) -> {
+                    Map<String, TreeMap<Integer, String>> r = new HashMap<>();
+                    r.putAll(t1);
+                    r.putAll(t2);
+                    return r;
+                });
     }
 
     public JavaPairRDD<String, Map<String, TreeMap<Integer, String>>> getGroupedRCPRDD() {

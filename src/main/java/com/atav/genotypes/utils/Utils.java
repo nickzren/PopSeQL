@@ -11,7 +11,6 @@ import com.atav.genotypes.beans.Variant;
 import function.variant.base.Output;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,9 +26,10 @@ import scala.Tuple2;
 public class Utils implements Serializable {
     private static final long serialVersionUID = 80L;
     public Broadcast<Map<String,Integer>> broadCastPheno;
-    
-    public Utils(Broadcast<Map<String,Integer>> in){
+    public Broadcast<Set<String>> broadCastSamples;
+    public Utils(Broadcast<Map<String,Integer>> in, Broadcast<Set<String>> in2){
         this.broadCastPheno=in;
+        this.broadCastSamples=in2;
     }
     
         public static short getCovValue(char letter) {
@@ -51,19 +51,13 @@ public class Utils implements Serializable {
     public Function< Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant> joinMapper = 
             new Function<Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant>() {
                 
-            private final Set<String> samples;
-                {
-                    this.samples=new HashSet<>();
-                    this.samples.addAll(SampleManager.broadCastSamples.value());
-                }
-                
             @Override
             public Variant call(Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> t1) throws Exception {
                 Variant v=new ArrayList<>(((t1._2)._1).values()).get(0);
                 
                 //if (null!=v.getPos()){
                     Set<String> nonCarrierSamps=new HashSet<>();
-                    nonCarrierSamps.addAll(samples);
+                    nonCarrierSamps.addAll(broadCastSamples.value());
                     nonCarrierSamps.removeAll(v.getCarrierMap().keySet());
                     nonCarrierSamps
                             .stream().forEach((samp) -> {

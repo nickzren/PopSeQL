@@ -27,7 +27,7 @@ public static SparkSession spsn = SparkSession
   .appName("Genotype generator")
   .master(Configuration.master)
   .getOrCreate();
-public static String limiter=" where block_id IN (\"X-125694\",\"X-120643\",\"X-120619\",\"X-120080\", \"X-107153\") ";
+public static String limiter=" where 1=1";
 //public static JavaPairRDD<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> joinRes;
 
 
@@ -38,15 +38,15 @@ public static void main(String args[]){
     samp.doFiltering(limiter);
     samp.setSampleIds();
     
+    
     System.out.println("Started grouping...");   
-    //Called Vars
+    
+//    CalledVariant cv = new CalledVariant(spsn);
+//            cv.doFilter(limiter);
+//            cv.setcvPRDD();
     CalledVariant cv = (new CalledVariant(spsn)).doGrouping(limiter);
-    //Read Cov
     ReadCoverage rc = (new ReadCoverage(spsn)).doGrouping(limiter);    
-    System.out.println("Done with grouping!!");
-    //VarGenoOutput.testPheno(samp);
-    //Do join
-    Utils u = new Utils(samp.getBroadCastPheno());
+    Utils u = new Utils(samp.getBroadCastPheno(), samp.getBroadCastSamples());
     
             JavaPairRDD
                     .toRDD(cv
@@ -57,6 +57,7 @@ public static void main(String args[]){
                     ).toJavaRDD()
                      .map(u.joinMapper)
                      .map(u.outputMapper)
+                     .repartition(10)
                      .saveAsTextFile(Configuration.csvFilePath);
     
     spsn.stop();

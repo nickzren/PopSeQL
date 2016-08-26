@@ -55,10 +55,10 @@ public class CalledVariant {
         | pass_fail_status       |
         +------------------------+
      */
-    private Dataset<Row> cvDF;
-    private JavaRDD<Row> cvRDD;
-    private JavaPairRDD<String, Row> cvPRDD;
-    private JavaPairRDD<String, Map<String,Variant>> transCVPRDD;
+//    private Dataset<Row> cvDF;
+//    private JavaRDD<Row> cvRDD;
+//    private JavaPairRDD<String, Row> cvPRDD;
+//    private JavaPairRDD<String, Map<String,Variant>> transCVPRDD;
     private JavaPairRDD<String, Map<String, Variant>> groupedCvPRDD;
     
     Map<String, String> options;
@@ -73,21 +73,21 @@ public class CalledVariant {
         options.put("driver", Configuration.driver);
     }
 
-    public Dataset<Row> getCvDF() {
-        return cvDF;
-    }
-
-    public void setCvDF(Dataset<Row> cvDF) {
-        this.cvDF = cvDF;
-    }
-
-    public JavaPairRDD<String, Row> getCvPRDD() {
-        return cvPRDD;
-    }
-
-    public void setCvPRDD(JavaPairRDD<String, Row> cvPRDD) {
-        this.cvPRDD = cvPRDD;
-    }
+//    public Dataset<Row> getCvDF() {
+//        return cvDF;
+//    }
+//
+//    public void setCvDF(Dataset<Row> cvDF) {
+//        this.cvDF = cvDF;
+//    }
+//
+//    public JavaPairRDD<String, Row> getCvPRDD() {
+//        return cvPRDD;
+//    }
+//
+//    public void setCvPRDD(JavaPairRDD<String, Row> cvPRDD) {
+//        this.cvPRDD = cvPRDD;
+//    }
 
     public JavaPairRDD<String, Map<String, Variant>> getGroupedCvPRDD() {
         return groupedCvPRDD;
@@ -106,35 +106,64 @@ public class CalledVariant {
         options.put("dbtable", cvQuery);
     }
 
-    public void setcvDF() {
+//    public void setcvDF() {
+//
+//        cvDF = spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load()
+//                .coalesce(2048);
+//        
+//        //System.out.println("Count : ...... " + cvDF.collectAsList().size());
+//    }
 
-        cvDF = spsn
-                .read()
-                .format("jdbc")
-                .options(options)
-                .load();
-    }
-
-    public void setcvRDD() {
-        if (cvDF == null) {
-            setcvDF();
-        }        
-        cvRDD = cvDF.toJavaRDD();
-    }
+//    public void setcvRDD() {
+//        if (cvDF == null) {
+//            setcvDF();
+//        }        
+//        cvRDD = spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load()
+//                .coalesce(2048)
+//                .toJavaRDD();                
+//        //System.out.println("Count : ...... " + cvRDD.count());
+//    }
     
-    public void setcvPRDD() {
-        if (cvRDD == null) {
-            setcvRDD();
-        }
-        cvPRDD = cvRDD.mapToPair((Row r) -> {
-            return new Tuple2<String, Row>(r.getString(0), r);
-        } );
-        transCVPRDD=cvPRDD.mapToPair((Tuple2<String, Row> t1) -> {
-           Map<String,Variant> m= new HashMap<>();
-           m.put(Integer.toString(t1._2.getInt(2)), new Variant(t1._2)); //Map of Variant_Id and Variant Object
-           return new Tuple2<String,Map<String, Variant>>(t1._1,m);
-       });
-    }
+//    public void setcvPRDD() {
+//        if (cvRDD == null) {
+//            setcvRDD();
+//        }
+//        cvPRDD = spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load()
+//                .coalesce(2048)
+//                .toJavaRDD()
+//                .mapToPair((Row r) -> {
+//                                return new Tuple2<String, Row>(r.getString(0), r);
+//                            } );
+//        transCVPRDD = spsn
+//                        .read()
+//                        .format("jdbc")
+//                        .options(options)
+//                        .load()
+//                        .coalesce(2048)
+//                        .toJavaRDD()
+//                        .mapToPair((Row r) -> {
+//                            return new Tuple2<String, Row>(r.getString(0), r);
+//                        })
+//                        .mapToPair(
+//                                (Tuple2<String, Row> t1) -> {
+//                                    Map<String, Variant> m = new HashMap<>();
+//                                    m.put(Integer.toString(t1._2.getInt(2)), new Variant(t1._2)); //Map of Variant_Id and Variant Object
+//                                    return new Tuple2<String, Map<String, Variant>>(t1._1, m);
+//                                });
+//        
+//    }
     
      
     public CalledVariant doGrouping(String lim) {
@@ -144,21 +173,37 @@ public class CalledVariant {
     }
     
     public void doGrouping() {
-        if (cvPRDD == null) {
-            setcvPRDD();
-        }        
-        groupedCvPRDD=transCVPRDD.reduceByKey((Map<String, Variant> t1, Map<String, Variant> t2) -> {
-            Map<String, Variant> r= new HashMap<>();
-            r.putAll(t1);
-            t2.keySet().stream().forEach((s) -> {
-                if (r.containsKey(s)){
-                    r.get(s).getCarrierMap().putAll(t2.get(s).getCarrierMap());
-                }else{
-                    r.put(s, t2.get(s));
-                }
-            });
-            return r;
-        });
-
+//        if (cvPRDD == null) {
+//            setcvPRDD();
+//        }        
+        groupedCvPRDD = spsn
+                .read()
+                .format("jdbc")
+                .options(options)
+                .load()
+                .coalesce(2048)
+                .toJavaRDD()
+                .mapToPair((Row r) -> {
+                    return new Tuple2<String, Row>(r.getString(0), r);
+                })
+                .mapToPair(
+                        (Tuple2<String, Row> t1) -> {
+                            Map<String, Variant> m = new HashMap<>();
+                            m.put(Integer.toString(t1._2.getInt(2)), new Variant(t1._2)); //Map of Variant_Id and Variant Object
+                            return new Tuple2<String, Map<String, Variant>>(t1._1, m);
+                        })
+                .reduceByKey((Map<String, Variant> t1, Map<String, Variant> t2) -> {
+                    Map<String, Variant> r = new HashMap<>();
+                    r.putAll(t1);
+                    t2.keySet().stream().forEach((s) -> {
+                        if (r.containsKey(s)) {
+                            r.get(s).getCarrierMap().putAll(t2.get(s).getCarrierMap());
+                        } else {
+                            r.put(s, t2.get(s));
+                        }
+                    });
+                    return r;
+                });
+        
     }
 }

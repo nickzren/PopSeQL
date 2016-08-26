@@ -26,11 +26,15 @@ public class SampleManager {
             + Configuration.schema + ".read_coverage";
     SparkSession spsn;
     public static List<String> sampleIds;
-    public static Broadcast<Set<String>> broadCastSamples;
+    public Broadcast<Set<String>> broadCastSamples;
     public Broadcast<Map<String,Integer>> broadCastPheno;
 
     public Broadcast<Map<String, Integer>> getBroadCastPheno() {
         return broadCastPheno;
+    }
+
+    public Broadcast<Set<String>> getBroadCastSamples() {
+        return broadCastSamples;
     }
     
     
