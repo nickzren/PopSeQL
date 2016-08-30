@@ -25,7 +25,6 @@ public static SparkSession spsn = SparkSession
   .builder()
   //.config("spark.some.config.option", "some-value")
   .appName("Genotype generator")
-  .master(Configuration.master)
   .getOrCreate();
 public static String limiter=" where 1=1";
 //public static JavaPairRDD<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> joinRes;
