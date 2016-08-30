@@ -7,15 +7,16 @@ package com.atav.genotypes;
 
 import com.atav.genotypes.beans.Variant;
 import com.atav.genotypes.conf.Configuration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.spark.SparkFiles;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 
 /**
@@ -59,6 +60,10 @@ public class CalledVariant {
 //    private JavaRDD<Row> cvRDD;
 //    private JavaPairRDD<String, Row> cvPRDD;
 //    private JavaPairRDD<String, Map<String,Variant>> transCVPRDD;
+    
+    
+    //File loc :- /Users/kaustubh/Desktop/all_samples_called_variant.txt
+
     private JavaPairRDD<String, Map<String, Variant>> groupedCvPRDD;
     
     Map<String, String> options;
@@ -68,6 +73,7 @@ public class CalledVariant {
     public CalledVariant(SparkSession sesh) {
         spsn = sesh;
         options = new HashMap<>();
+        
         options.put("url", Configuration.url);
         options.put("dbtable", cvQuery); //default
         options.put("driver", Configuration.driver);
@@ -176,11 +182,59 @@ public class CalledVariant {
 //        if (cvPRDD == null) {
 //            setcvPRDD();
 //        }        
-        groupedCvPRDD = spsn
-                .read()
-                .format("jdbc")
-                .options(options)
-                .load()
+
+
+
+        /***
+         *  Downloading the file to Spark nodes
+         * 
+         */
+        
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/called_variant/part-r-00000-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
+        
+        
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/called_variant/part-r-00001-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
+        
+                
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/called_variant/part-r-00002-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
+        
+        /**
+         * mysql
+         */
+//                Dataset<Row> sourceToRDD=spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load();
+ /**
+  *             TEXT FILE
+  */
+//                Dataset<Row> sourceToRDD=spsn
+//                .read()
+//                .schema(getSchema())                        
+//                .format("com.databricks.spark.csv")
+//                .option("inferSchema", "false")
+//                .option("nullValue", "\\N")
+//                .option("header", "false")
+//                .option("sep", "\t")
+//                .csv(Configuration.cvFile);
+
+/**
+ *              PARQUET FILE
+ * 
+ */
+            Dataset<Row> sourceToRDD=spsn
+                                     .read()
+                                     .parquet(SparkFiles.get("part*"));
+
+
+        groupedCvPRDD = sourceToRDD
                 .coalesce(2048)
                 .toJavaRDD()
                 .mapToPair((Row r) -> {
@@ -205,5 +259,35 @@ public class CalledVariant {
                     return r;
                 });
         
+    }
+    
+    
+        public static StructType getSchema() {
+        StructField[] fields = {
+            DataTypes.createStructField("Block ID", DataTypes.StringType, true),
+            DataTypes.createStructField("Sample ID", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Variant ID", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Chr", DataTypes.StringType, true),
+            DataTypes.createStructField("Pos", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Ref", DataTypes.StringType, true),
+            DataTypes.createStructField("Alt", DataTypes.StringType, true),
+            DataTypes.createStructField("genotype", DataTypes.IntegerType, true),
+            DataTypes.createStructField("samtools", DataTypes.IntegerType, true),
+            DataTypes.createStructField("gatk", DataTypes.IntegerType, true),
+            DataTypes.createStructField("readsref", DataTypes.IntegerType, true),
+            DataTypes.createStructField("readsalt", DataTypes.IntegerType, true),
+            DataTypes.createStructField("vqslod", DataTypes.FloatType, true),
+            DataTypes.createStructField("Geno Qual", DataTypes.DoubleType, true),
+            DataTypes.createStructField("Strand Bias FS", DataTypes.DoubleType, true),
+            DataTypes.createStructField("Haplo Score", DataTypes.DoubleType, true),
+            DataTypes.createStructField("RMS Map Qual MQ", DataTypes.DoubleType, true),
+            DataTypes.createStructField("Qual by depth QD", DataTypes.DoubleType, true),
+            DataTypes.createStructField("Qual", DataTypes.createDecimalType(7,2), true),
+            DataTypes.createStructField("REad pos rank sum", DataTypes.DoubleType, true),
+            DataTypes.createStructField("Map qual rank sum", DataTypes.DoubleType, true),
+            DataTypes.createStructField("Culprit", DataTypes.StringType, true),
+            DataTypes.createStructField("Pass Fail", DataTypes.StringType, true)
+        };
+        return new StructType(fields);
     }
 }

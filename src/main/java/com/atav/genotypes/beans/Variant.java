@@ -41,11 +41,9 @@ public class Variant implements Serializable {
     private Map<String, NonCarrier> nonCarrierMap;
     private static final long serialVersionUID = 40L;
     private int genotype;
-    private Row cvRowData;
     
     
     public Variant(Row r) {
-        this.cvRowData=r;
         this.variantID = Integer.toString(r.getInt(2));
         this.sampleID = Integer.toString(r.getInt(1));
         if (null==this.carrierMap)this.carrierMap = new HashMap<>();
@@ -178,13 +176,7 @@ public class Variant implements Serializable {
     public String getRef() {
         return ref;
     }
-
-    public Row getCvRowData() {
-        return cvRowData;
-    }
     
-    
-
     public String getVariantID() {
         return variantID;
     }

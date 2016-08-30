@@ -21,5 +21,9 @@ public class Configuration {
         public static String url = "jdbc:mysql://localhost:3306/" + schema + "?user=" + username + "&password=" + password;
         public static String master = "spark://igm-it-spare.local:7077";
         public static String csvFilePath= "/Users/kaustubh/Documents/genotypes.csv";
+        //public static String cvFile="/Users/kaustubh/Desktop/all_samples_called_variant.txt";
+        public static String cvFile="/Users/kaustubh/Desktop/parquet/called_variant/part*";
+        public static String rcFile="/Users/kaustubh/Desktop/parquet/read_coverage/part*";
+        //public static String rcFile="/Users/kaustubh/Desktop/all_samples_read_coverage_1024.txt";
         
 }

@@ -5,15 +5,20 @@
  */
 package com.atav.genotypes;
 
+import static com.atav.genotypes.CalledVariant.getSchema;
 import com.atav.genotypes.conf.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.spark.SparkFiles;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 
 
@@ -39,7 +44,7 @@ public class ReadCoverage {
     private Map<String, String> options;
     private String cvQuery = "Select * from " + Configuration.schema + ".read_coverage";
     private SparkSession spsn;
-    
+    //Read Coverage location:- /Users/kaustubh/Desktop/all_samples_read_coverage_1024.txt
 //    private Dataset<Row> rcDF;
 //    private JavaRDD<Row> rcRDD;
 //    private JavaPairRDD<String, Row> rcPRDD;
@@ -145,12 +150,87 @@ public class ReadCoverage {
 //        if(rcPRDD==null){
 //            setrcPRDD();
 //        }
+        /**
+         * Downloading readCoverage file at all nodes
+         * 
+         */
         
-        groupedRCPRDD = spsn
-                .read()
-                .format("jdbc")
-                .options(options)
-                .load()
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00000-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        
+        
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00001-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        
+                
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00002-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+
+
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00003-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+                
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00004-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+                        
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00005-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+                                
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00006-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");        
+                                        
+                                        
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00007-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        
+        
+        spsn
+        .sparkContext()
+        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00008-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        /**
+         * 
+         * spsn
+         * .read() // DataFRameReader
+         * .
+         * 
+         */
+        
+        
+        
+        /**
+         * switch sources here
+         */
+//        Dataset<Row> sourceToRDD=spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load();
+
+//      Dataset<Row> sourceToRDD=spsn
+//                .read()
+//                .schema(getSchema())                        
+//                .format("com.databricks.spark.csv")
+//                .option("nullValue", "\\N")
+//                .option("inferSchema", "false")
+//                .option("header", "false")
+//                .option("sep", "\t")
+//                .csv(Configuration.rcFile);
+      
+        /***               PARQUET         */
+        
+            Dataset<Row> sourceToRDD=spsn
+                                     .read()
+                                     .parquet(SparkFiles.get("part*"));
+        
+        groupedRCPRDD = sourceToRDD
                 .coalesce(2048)
                 .toJavaRDD()
                 .mapToPair((Row r) -> {
@@ -161,20 +241,28 @@ public class ReadCoverage {
                     boolean isNum = true;
                     int covKey = 0;
                     TreeMap<Integer, String> res = new TreeMap<>();
+
+                    
+                 if(null!=t1._2.getString(2)){   
                     String[] rcVals = t1._2.getString(2).trim()
-                            .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"); //Split Coverage string
-                    //Coverage range goes first, Val later
-                    for (String cov : rcVals) {
-                        if (isNum) {
-                            covKey += new Integer(cov);
-                            isNum = false;
-                        } else {
-                            res.put(covKey, cov);
-                            isNum = true;
+                                .split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)"); //Split Coverage string
+                        //Coverage range goes first, Val later
+                        for (String cov : rcVals) {
+                            if (isNum) {
+                                covKey += new Integer(cov);
+                                isNum = false;
+                            } else {
+                                res.put(covKey, cov);
+                                isNum = true;
+                            }
                         }
-                    }
+                 }else {
+                     res.put(1024, "a");
+                 }
                     m.put(Integer.toString(t1._2.getInt(1)), //Sample ID
-                            res); //Coverage TreeMap
+                                                        res); //Coverage TreeMap
+                
+                    
                     return new Tuple2<String, Map<String, TreeMap<Integer, String>>>(t1._1, m); //Block ID and Sample+Coverage Map
                 })
                 .reduceByKey((Map<String, TreeMap<Integer, String>> t1, Map<String, TreeMap<Integer, String>> t2) -> {
@@ -189,4 +277,13 @@ public class ReadCoverage {
         return groupedRCPRDD;
     }
     
+    
+        public static StructType getSchema() {
+         StructField[] fields = {
+            DataTypes.createStructField("Block ID", DataTypes.StringType, true),
+            DataTypes.createStructField("Sample ID", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Coverage value", DataTypes.StringType, true)
+            };
+        return new StructType(fields);
+        }
 }
