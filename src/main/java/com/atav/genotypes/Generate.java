@@ -16,6 +16,7 @@ import com.atav.genotypes.utils.SampleManager;
 import com.atav.genotypes.utils.Utils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 
 
 public class Generate {
@@ -24,6 +25,8 @@ public class Generate {
 public static SparkSession spsn = SparkSession
   .builder()
   //.config("spark.some.config.option", "some-value")
+  .master(Configuration.master)
+  .config("spark.shuffle.spill.compress","false")
   .appName("Genotype generator")
   .getOrCreate();
 public static String limiter=" where 1=1";
@@ -56,6 +59,7 @@ public static void main(String args[]){
                     ).toJavaRDD()
                      .map(u.joinMapper)
                      .map(u.outputMapper)
+                     .flatMap(u.elementsOfList)
                      .repartition(10)
                      .saveAsTextFile(Configuration.csvFilePath);
     

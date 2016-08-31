@@ -192,17 +192,17 @@ public class CalledVariant {
         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/called_variant/part-r-00000-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
+        .addFile(Configuration.cvFile+"part-r-00000-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
         
         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/called_variant/part-r-00001-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
+        .addFile(Configuration.cvFile+"part-r-00001-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
         
                 
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/called_variant/part-r-00002-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
+        .addFile(Configuration.cvFile+"part-r-00002-ee630a23-c7ae-4676-88f5-947a7991288a.parquet");
         
         /**
          * mysql
@@ -231,11 +231,12 @@ public class CalledVariant {
  */
             Dataset<Row> sourceToRDD=spsn
                                      .read()
-                                     .parquet(SparkFiles.get("part*"));
+                                     .parquet(SparkFiles.get("part*"))
+                    ;
 
 
         groupedCvPRDD = sourceToRDD
-                .coalesce(2048)
+                .repartition(300)
                 .toJavaRDD()
                 .mapToPair((Row r) -> {
                     return new Tuple2<String, Row>(r.getString(0), r);
@@ -256,6 +257,8 @@ public class CalledVariant {
                             r.put(s, t2.get(s));
                         }
                     });
+                    t1.clear();
+                    t2.clear();
                     return r;
                 });
         

@@ -6,6 +6,7 @@
 package com.atav.genotypes.utils;
 
 import com.atav.genotypes.conf.Configuration;
+import global.PopSpark;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.Set;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 
 /**
  *
@@ -71,16 +74,29 @@ public class SampleManager {
     
     public List<String> fetchSampleIds(){
         
-        return spsn
-                .read()
-                .format("jdbc")
-                .options(options)
-                .load()
-                .toJavaRDD()
-                .map((Row t) -> Integer.toString(t.getInt(0)))
-                .collect();
+//        return spsn
+//                .read()
+//                .format("jdbc")
+//                .options(options)
+//                .load()
+//                .toJavaRDD()
+//                .map((Row t) -> Integer.toString(t.getInt(0)))
+//                .collect();
                 //.toArray(new String[0]);
-                
+                 return spsn
+                .read()
+                .option("header", "false")
+                .option("delimiter", "\t")
+                .schema(
+                        new StructType()
+                        .add("id", DataTypes.IntegerType, false)
+                        .add("pheno", DataTypes.ShortType, false)
+                ).
+                csv(Configuration.sample)
+                .toJavaRDD()
+                         .map((Row t) -> Integer.toString(t.getInt(0)))
+                         .collect();
+                         
     }
     
 }

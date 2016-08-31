@@ -12,9 +12,12 @@ import function.variant.base.Output;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.broadcast.Broadcast;
 import scala.Tuple2;
@@ -48,20 +51,20 @@ public class Utils implements Serializable {
         }
     }            
         
-    public Function< Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant> joinMapper = 
-            new Function<Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, Variant>() {
+    public Function< Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, ArrayList<Variant>> joinMapper = 
+            new Function<Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>>, ArrayList<Variant>>() {
                 
             @Override
-            public Variant call(Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> t1) throws Exception {
-                Variant v=new ArrayList<>(((t1._2)._1).values()).get(0);
-                
+            public ArrayList<Variant> call(Tuple2<String, Tuple2<Map<String, Variant>, Map<String, TreeMap<Integer, String>>>> t1) throws Exception {
+                ArrayList<Variant> vars =new ArrayList<>(((t1._2)._1).values());
+                ((t1._2)._1).clear();
                 //if (null!=v.getPos()){
+                for (Variant v: vars){
                     Set<String> nonCarrierSamps=new HashSet<>();
                     nonCarrierSamps.addAll(broadCastSamples.value());
                     nonCarrierSamps.removeAll(v.getCarrierMap().keySet());
                     nonCarrierSamps
                             .stream().forEach((samp) -> {
-                                
                                 if (null!=((t1._2)._2).get(samp)){
                                 v.getNonCarrierMap()
                                         .put(samp, new NonCarrier(samp,  getCovValue(((t1._2)._2)
@@ -76,15 +79,20 @@ public class Utils implements Serializable {
                                 }
                             });
                 //}
-                
-                return v;
+                    }
+                ((t1._2)._2).clear();
+                return vars;
             }
         };
     
     
-     public Function<Variant,String> outputMapper= new Function<Variant, String>() {
+    
+    
+     public Function<ArrayList<Variant>,List<String>> outputMapper= new Function<ArrayList<Variant>, List<String>>() {
         @Override
-        public String call(Variant t1) {
+        public List<String> call(ArrayList<Variant> vars) {
+            ArrayList<String> listStrings= new ArrayList<>();
+            for(Variant t1: vars){
             Output o= new Output();
             t1.getCarrierMap().entrySet().stream().forEach((c) -> {
                 o.addSampleGeno(c.getValue().getGenotype(),
@@ -99,10 +107,18 @@ public class Utils implements Serializable {
                         ));
             });
             t1.setPheno(broadCastPheno.value().get(t1.getSampleID())==0? "case":"ctrl");
-           return (new VarGenoOutput(t1,o)).toString();
+            listStrings.addAll((new VarGenoOutput(t1,o)).getStringList());
+            }
+            return listStrings;
         }
     };
-             
+           
+     public FlatMapFunction<List<String>,String> elementsOfList = new FlatMapFunction<List<String>, String>() {
+        @Override
+        public Iterator<String> call(List<String> t){
+            return t.iterator();
+        }
+    };
              
              
              

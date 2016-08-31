@@ -16,6 +16,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
@@ -157,44 +158,44 @@ public class ReadCoverage {
         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00000-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00000-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
         
         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00001-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00001-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
         
                 
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00002-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00002-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
 
 
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00003-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00003-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
                 
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00004-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00004-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
                         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00005-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00005-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
                                 
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00006-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");        
+        .addFile(Configuration.rcFile+"part-r-00006-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");        
                                         
                                         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00007-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00007-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
         
         
         spsn
         .sparkContext()
-        .addFile("/Users/kaustubh/Desktop/parquet/read_coverage/part-r-00008-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
+        .addFile(Configuration.rcFile+"part-r-00008-93ad10f4-ec5b-411d-9789-20921a8e2b9e.parquet");
         /**
          * 
          * spsn
@@ -231,7 +232,7 @@ public class ReadCoverage {
                                      .parquet(SparkFiles.get("part*"));
         
         groupedRCPRDD = sourceToRDD
-                .coalesce(2048)
+                .repartition(300)
                 .toJavaRDD()
                 .mapToPair((Row r) -> {
                     return new Tuple2<String, Row>(r.getString(0), r); // BlockID and Row
@@ -260,15 +261,15 @@ public class ReadCoverage {
                      res.put(1024, "a");
                  }
                     m.put(Integer.toString(t1._2.getInt(1)), //Sample ID
-                                                        res); //Coverage TreeMap
-                
-                    
+                                                        res); //Coverage TreeMap    
                     return new Tuple2<String, Map<String, TreeMap<Integer, String>>>(t1._1, m); //Block ID and Sample+Coverage Map
                 })
                 .reduceByKey((Map<String, TreeMap<Integer, String>> t1, Map<String, TreeMap<Integer, String>> t2) -> {
                     Map<String, TreeMap<Integer, String>> r = new HashMap<>();
                     r.putAll(t1);
                     r.putAll(t2);
+                    t1.clear();
+                    t2.clear();
                     return r;
                 });
     }
