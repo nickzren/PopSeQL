@@ -1,6 +1,5 @@
 package function.variant.base;
 
-import com.atav.genotypes.beans.Variant;
 import function.genotype.base.CalledVariant;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.SampleManager;

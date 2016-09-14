@@ -62,7 +62,7 @@ public class CalledVariant extends Region {
     public void addCarrier(Row r, int sampleId, short pheno) {
         int coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
         
-        System.out.println("filter!: "+Integer.toString(CalledVariantSparkUtils.covCallFilter[Index.CASE]));
+//        System.out.println("filter!: "+Integer.toString(CalledVariantSparkUtils.covCallFilter[Index.CASE]));
         
         if (coverage == Data.NA) {
             qcFailSample[pheno]++;

@@ -37,7 +37,7 @@ public class CalledVariantSparkUtils {
 //                new Properties());
 
         // Set called_variant parquet filepath here
-        return PopSpark.session.read().parquet("/popseql/igm_ctrl/called_variant/part*");
+        return PopSpark.session.read().parquet("/project1/parquet/called_variant/part*");
     }
     
     public static Dataset<Row> getReadCoverageDF(String[] blockIds) {
@@ -48,7 +48,7 @@ public class CalledVariantSparkUtils {
 //                        new Properties());
 
         // Set read_coverage parquet filepath here
-        return PopSpark.session.read().parquet("/popseql/igm_ctrl/read_coverage/part*");
+        return PopSpark.session.read().parquet("/project1/parquet/read_coverage/part*");
     }
 
     public static Dataset<Row> getSampleIdDF(Dataset<Row> cvDF) {
