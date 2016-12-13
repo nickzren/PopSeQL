@@ -48,7 +48,7 @@ public class Carrier extends NonCarrier {
         samplePheno = r.getShort(r.fieldIndex("pheno"));
     }
     
-    public Carrier(Row r, short pheno) {
+    public Carrier(Row r, int pheno) {
         sampleId = r.getInt(r.fieldIndex("sample_id"));        
         coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
         genotype = r.getInt(r.fieldIndex("genotype"));

@@ -1,7 +1,9 @@
 package function.genotype.base;
 
 import global.Data;
+import utils.PopSpark;
 import java.util.Iterator;
+import org.apache.spark.broadcast.Broadcast;
 import static utils.CommandManager.checkRangeValid;
 import static utils.CommandManager.checkValueValid;
 import static utils.CommandManager.getValidDouble;
@@ -42,8 +44,11 @@ public class GenotypeLevelFilterCommand {
     public static double mapQualRankSum = Data.NO_FILTER;
     public static boolean isQcMissingIncluded = false;
     public static int maxQcFailSample = Data.NO_FILTER;
-    
-     public static final String[] VARIANT_STATUS = {"pass", "pass+intermediate", "all"};
+
+    public static Broadcast<int[]> covCallFiltersBroadcast;
+    public static Broadcast<int[]> covNoCallFiltersBroadcast;
+
+    public static final String[] VARIANT_STATUS = {"pass", "pass+intermediate", "all"};
 
     public static void initOptions(Iterator<CommandOption> iterator)
             throws Exception {
@@ -110,7 +115,8 @@ public class GenotypeLevelFilterCommand {
                         varStatus = null;
                     } else {
                         varStatus = str.split(",");
-                    }   break;
+                    }
+                    break;
                 case "--het-percent-alt-read":
                     checkRangeValid("0-1", option);
                     hetPercentAltRead = getValidRange(option);
@@ -185,14 +191,31 @@ public class GenotypeLevelFilterCommand {
             if (minCtrlCoverageNoCall == Data.NO_FILTER) {
                 minCtrlCoverageNoCall = minCoverage;
             }
+
+            // Broadcast coverage filters (which are the only ones not filtered using DataFrames filtering)
+            int[] covCallFilters
+                    = {GenotypeLevelFilterCommand.minCtrlCoverageCall, GenotypeLevelFilterCommand.minCaseCoverageCall};
+            int[] covNoCallFilters
+                    = {GenotypeLevelFilterCommand.minCtrlCoverageNoCall, GenotypeLevelFilterCommand.minCaseCoverageNoCall};
+
+            covCallFiltersBroadcast = PopSpark.context.broadcast(covCallFilters);
+            covNoCallFiltersBroadcast = PopSpark.context.broadcast(covNoCallFilters);
         }
     }
-    
+
+    public static Broadcast<int[]> getCovCallFiltersBroadcast() {
+        return covCallFiltersBroadcast;
+    }
+
+    public static Broadcast<int[]> getCovNoCallFiltersBroadcast() {
+        return covNoCallFiltersBroadcast;
+    }
+
     public static boolean isMaxCtrlMafValid(double value) {
         if (maxCtrlMaf == Data.NO_FILTER) {
             return true;
         }
-        
+
         return value <= maxCtrlMaf;
     }
 
@@ -261,10 +284,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value >= genotypeQualGQ) {
-                return true;
-            }
+        } else if (value >= genotypeQualGQ) {
+            return true;
         }
 
         return false;
@@ -279,10 +300,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value <= strandBiasFS) {
-                return true;
-            }
+        } else if (value <= strandBiasFS) {
+            return true;
         }
 
         return false;
@@ -297,10 +316,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value <= haplotypeScore) {
-                return true;
-            }
+        } else if (value <= haplotypeScore) {
+            return true;
         }
 
         return false;
@@ -315,10 +332,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value >= rmsMapQualMQ) {
-                return true;
-            }
+        } else if (value >= rmsMapQualMQ) {
+            return true;
         }
 
         return false;
@@ -333,10 +348,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value >= qualByDepthQD) {
-                return true;
-            }
+        } else if (value >= qualByDepthQD) {
+            return true;
         }
 
         return false;
@@ -351,10 +364,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value >= qual) {
-                return true;
-            }
+        } else if (value >= qual) {
+            return true;
         }
 
         return false;
@@ -369,10 +380,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value >= readPosRankSum) {
-                return true;
-            }
+        } else if (value >= readPosRankSum) {
+            return true;
         }
 
         return false;
@@ -387,10 +396,8 @@ public class GenotypeLevelFilterCommand {
             if (isQcMissingIncluded) {
                 return true;
             }
-        } else {
-            if (value >= mapQualRankSum) {
-                return true;
-            }
+        } else if (value >= mapQualRankSum) {
+            return true;
         }
 
         return false;

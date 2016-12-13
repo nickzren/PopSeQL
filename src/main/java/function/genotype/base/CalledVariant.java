@@ -3,7 +3,6 @@ package function.genotype.base;
 import function.variant.base.Output;
 import function.variant.base.Region;
 import global.Data;
-import global.Index;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
@@ -49,6 +48,7 @@ public class CalledVariant extends Region {
             else
                 carrierMap.put(r.getInt(r.fieldIndex("sample_id")), c);
         }
+        
         initVariantData(r);
         
         while(nonCarrierDataIt.hasNext()) {
@@ -59,10 +59,8 @@ public class CalledVariant extends Region {
         
     }
     
-    public void addCarrier(Row r, int sampleId, short pheno) {
-        int coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
-        
-//        System.out.println("filter!: "+Integer.toString(CalledVariantSparkUtils.covCallFilter[Index.CASE]));
+    public void addCarrier(Row r, int sampleId, int pheno) {
+        int coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));       
         
         if (coverage == Data.NA) {
             qcFailSample[pheno]++;

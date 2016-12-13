@@ -6,8 +6,6 @@ import function.genotype.base.SampleManager;
 import global.Data;
 import global.Index;
 import function.genotype.statistics.HWEExact;
-import java.util.HashMap;
-import java.util.Map;
 import utils.MathManager;
 
 /**
@@ -27,26 +25,11 @@ public class Output /* implements Cloneable */ {
     protected double[] minorAlleleFreq = new double[2];
     protected double[] minorHomFreq = new double[2];
     protected double[] hweP = new double[2];
-    //private Map<String, Integer> phenoMap;
-    private final Map<String, Integer> phenoMap=new HashMap<>();
     
     public Output(CalledVariant c) {
         calledVar = c;
     }
     
-//    public final void init(Variant var){
-//     
-//     
-//     var.getCarrierMap().entrySet().stream().forEach((c) -> {
-//         addSampleGeno(c.getValue().getGenotype(),
-//                 phenoMap.get(
-//                         c.getKey()
-//                 ));
-//        });
-//     var.getNonCarrierMap().entrySet().stream().forEach((nc) -> {
-//         addSampleGeno(nc.getValue().getGenotype(), phenoMap.get(nc.getKey()));
-//        });
-//    }
     public Output() {
         
     }
