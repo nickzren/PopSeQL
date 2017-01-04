@@ -1,8 +1,6 @@
 package utils;
 
 import global.Data;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.math.BigDecimal;
 
 /**

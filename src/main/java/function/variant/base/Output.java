@@ -25,13 +25,13 @@ public class Output /* implements Cloneable */ {
     protected double[] minorAlleleFreq = new double[2];
     protected double[] minorHomFreq = new double[2];
     protected double[] hweP = new double[2];
-    
+
     public Output(CalledVariant c) {
         calledVar = c;
     }
-    
+
     public Output() {
-        
+
     }
 
     public CalledVariant getCalledVar() {
@@ -69,15 +69,6 @@ public class Output /* implements Cloneable */ {
     public double[] getHweP() {
         return hweP;
     }
-    
-    
-    
-    
-//    public CalledVariant getCalledVariant() {
-//        return calledVar;
-//    }
-
-//    public void countSampleGeno();
 
     public void addSampleGeno(int geno, int pheno) {
         if (geno == Data.NA) {
@@ -216,20 +207,6 @@ public class Output /* implements Cloneable */ {
         }
     }
 
-//    public int getGenoType(int geno, Sample sample) {
-//        if (sample.isMale()
-//                && !calledVar.isInsideAutosomalOrPseudoautosomalRegions()) {
-//
-//            if (geno == Index.HOM) {
-//                return Index.HOM_MALE;
-//            } else if (geno == Index.REF) {
-//                return Index.REF_MALE;
-//            }
-//        }
-//
-//        return geno;
-//    }
-
     public String getGenoStr(int geno) {
         switch (geno) {
             case 2:
@@ -244,13 +221,6 @@ public class Output /* implements Cloneable */ {
 
         return "";
     }
-
-//    public boolean isValid() {
-//        return GenotypeLevelFilterCommand.isMinVarPresentValid(getVarPresent())
-//                && GenotypeLevelFilterCommand.isMinCaseCarrierValid(getCaseCarrier())
-//                && GenotypeLevelFilterCommand.isMaxCtrlMafValid(minorAlleleFreq[Index.CTRL])
-//                && GenotypeLevelFilterCommand.isMinCtrlMafValid(minorAlleleFreq[Index.CTRL]);
-//    }
 
     protected int getVarPresent() {
         if (GenotypeLevelFilterCommand.isAllNonRef && isMinorRef) {
@@ -280,44 +250,29 @@ public class Output /* implements Cloneable */ {
      * if ref is minor then only het & ref are qualified samples. If ref is
      * major then only hom & het are qualified samples.
      */
-//    public boolean isQualifiedGeno(int geno) {
-//        if (GenotypeLevelFilterCommand.isAllGeno) {
-//            return true;
-//        }
-//
-//        if (GenotypeLevelFilterCommand.isAllNonRef) {
-//            if (geno == 2 || geno == 1) {
-//                return true;
-//            }
-//        }
-//
-//        if (isMinorRef) {
-//            if (geno == 0 || geno == 1) {
-//                return true;
-//            }
-//        } else if (geno == 2 || geno == 1) {
-//            return true;
-//        }
-//
-//        return false;
-//    }
+    public boolean isQualifiedGeno(int geno) {
+        if (GenotypeLevelFilterCommand.isAllGeno) {
+            return true;
+        }
+
+        if (GenotypeLevelFilterCommand.isAllNonRef) {
+            if (geno == 2 || geno == 1) {
+                return true;
+            }
+        }
+
+        if (isMinorRef) {
+            if (geno == 0 || geno == 1) {
+                return true;
+            }
+        } else if (geno == 2 || geno == 1) {
+            return true;
+        }
+
+        return false;
+    }
 
     public boolean isMinorRef() {
         return isMinorRef;
     }
-
-//    @Override
-//    public Object clone() throws CloneNotSupportedException {
-//        Output output = (Output) super.clone();
-//
-//        output.genoCount = FormatManager.deepCopyIntArray(genoCount);
-//        output.minorHomCount = FormatManager.deepCopyIntArray(minorHomCount);
-//        output.majorHomCount = FormatManager.deepCopyIntArray(majorHomCount);
-//        output.hetFreq = FormatManager.deepCopyDoubleArray(hetFreq);
-//        output.minorAlleleFreq = FormatManager.deepCopyDoubleArray(minorAlleleFreq);
-//        output.minorHomFreq = FormatManager.deepCopyDoubleArray(minorHomFreq);
-//        output.hweP = FormatManager.deepCopyDoubleArray(hweP);
-//
-//        return output;
-//    }
 }

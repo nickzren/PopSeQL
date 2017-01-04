@@ -12,7 +12,7 @@ import function.genotype.vargeno.VarGenoCommand;
 public class Program {
 
     public static void main(String[] args) {
-
+        
         CommandManager.initOptions(args);
 
         SampleManager.init();
