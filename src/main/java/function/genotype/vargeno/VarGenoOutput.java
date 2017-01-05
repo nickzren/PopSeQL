@@ -22,13 +22,13 @@ public class VarGenoOutput extends Output {
     public static String[] colsToBeDropped = {"var_present", "case_carrier"};
 
     public void appendRowsToList(LinkedList<Row> l) {
-        for (Carrier c : calledVar.getCarriers()) {
+        for (Carrier c : calledVar.getCarrierMap().values()) {
             if (isQualifiedGeno(c.getGenotype())) {
                 l.add(getRow(c));
             }
         }
 
-        for (NonCarrier nc : calledVar.getNonCarriers()) {
+        for (NonCarrier nc : calledVar.getNonCarrierMap().values()) {
             if (isQualifiedGeno(nc.getGenotype())) {
                 l.add(getRow(nc));
             }

@@ -4,7 +4,6 @@ import function.variant.base.Output;
 import function.variant.base.Region;
 import global.Data;
 import java.util.HashMap;
-import java.util.Collection;
 import org.apache.spark.sql.Row;
 
 /**
@@ -16,9 +15,7 @@ public class CalledVariant extends Region {
 
     private HashMap<Integer, Carrier> carrierMap = new HashMap<>();
     private HashMap<Integer, NonCarrier> noncarrierMap = new HashMap<>();
-//    private int[] genotype = new int[SampleManager.getListSize()];
-//    private int[] coverage = new int[SampleManager.getListSize()];
-    
+
     public int variantId;
     public String variantIdStr;
     public String allele;
@@ -27,18 +24,12 @@ public class CalledVariant extends Region {
 
     public short blockOffset;
 
-    public void addCarrier(Row r, int sampleId, short pheno) {
-        carrierMap.put(sampleId, new Carrier(r, pheno));
+    public void addCarrier(int sampleId, Carrier carrier) {
+        carrierMap.put(sampleId, carrier);
     }
 
-    public void addNonCarrier(int sampleId, short coverage, short pheno) {
-        if (CalledVariantSparkUtils.covNoCallFilter[pheno] != Data.NO_FILTER) {
-            if (coverage < CalledVariantSparkUtils.covNoCallFilter[pheno]) {
-                return;
-            }
-        }
-
-        noncarrierMap.put(sampleId, new NonCarrier(sampleId, coverage, pheno));
+    public void addNonCarrier(int sampleId, NonCarrier noncarrier) {
+        noncarrierMap.put(sampleId, noncarrier);
     }
 
     public void addSampleDataToOutput(Output output) {
@@ -72,12 +63,12 @@ public class CalledVariant extends Region {
 
     }
 
-    public Collection<Carrier> getCarriers() {
-        return carrierMap.values();
+    public HashMap<Integer, Carrier> getCarrierMap() {
+        return carrierMap;
     }
 
-    public Collection<NonCarrier> getNonCarriers() {
-        return noncarrierMap.values();
+    public HashMap<Integer, NonCarrier> getNonCarrierMap() {
+        return noncarrierMap;
     }
 
     private int intChr() {
