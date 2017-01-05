@@ -54,9 +54,7 @@ public class VarGenoOutput extends Output {
                 + "Minor Hom Ctrl,"
                 + "Minor Hom Ctrl Freq,"
                 + "Het Ctrl Freq,"
-                + "Missing Case,"
                 + "QC Fail Case,"
-                + "Missing Ctrl,"
                 + "QC Fail Ctrl,"
                 + "Case Maf,"
                 + "Ctrl Maf,"
@@ -110,9 +108,7 @@ public class VarGenoOutput extends Output {
                 minorHomCount[Index.CTRL],
                 FormatManager.getDouble(minorHomFreq[Index.CTRL]),
                 FormatManager.getDouble(hetFreq[Index.CTRL]),
-                genoCount[Index.MISSING][Index.CASE],
                 calledVar.getQcFailSample(Index.CASE),
-                genoCount[Index.MISSING][Index.CTRL],
                 calledVar.getQcFailSample(Index.CTRL),
                 FormatManager.getDoubleObject(minorAlleleFreq[Index.CASE]), // keep double
                 FormatManager.getDoubleObject(minorAlleleFreq[Index.CTRL]), //keep double
@@ -158,9 +154,7 @@ public class VarGenoOutput extends Output {
             DataTypes.createStructField("Minor Hom Ctrl", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("Minor Hom Ctrl Freq", DataTypes.StringType, true),//d
             DataTypes.createStructField("Het Ctrl Freq", DataTypes.StringType, true),//d
-            DataTypes.createStructField("Missing Case", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("QC Fail Case", DataTypes.IntegerType, true),//i
-            DataTypes.createStructField("Missing Ctrl", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("QC Fail Ctrl", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("Case Maf", DataTypes.DoubleType, true),//d
             DataTypes.createStructField("Ctrl Maf", DataTypes.DoubleType, true),//d

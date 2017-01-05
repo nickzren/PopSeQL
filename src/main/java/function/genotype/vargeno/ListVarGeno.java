@@ -163,9 +163,5 @@ public class ListVarGeno {
                 .option("header", "true")
                 .option("nullValue", "NA")
                 .csv(CommonCommand.realOutputPath);
-
-        System.out.println();
-        System.out.println();
-        System.out.println();
     }
 }

@@ -9,6 +9,14 @@ import java.math.BigDecimal;
  */
 public class MathManager {
 
+    public static float devide(int a, int b) {
+        if (b == 0 || a == Data.NA || b == Data.NA) {
+            return Data.NA;
+        } else {
+            return (float) a / (float) b;
+        }
+    }
+    
     public static double devide(double a, double b) {
         if (b == 0 || b == Data.NA || a == Data.NA) {
             return Data.NA;
