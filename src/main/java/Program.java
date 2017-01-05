@@ -12,12 +12,11 @@ import function.genotype.vargeno.VarGenoCommand;
 public class Program {
 
     public static void main(String[] args) {
-        
+        PopSpark.init();
+
         CommandManager.initOptions(args);
 
         SampleManager.init();
-
-        PopSpark.init();
 
         if (VarGenoCommand.isListVarGeno) {
             ListVarGeno.run();

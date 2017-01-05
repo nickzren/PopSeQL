@@ -17,13 +17,13 @@ import utils.ErrorManager;
  */
 public class SampleManager {
 
-    private static Broadcast<HashMap<Integer, Integer>> sampleMapBroadcast;
+    private static Broadcast<HashMap<Integer, Short>> sampleMapBroadcast;
 
     private static int caseNum = 0;
     private static int ctrlNum = 0;
 
     public static void init() {
-        HashMap<Integer, Integer> sampleMap = new HashMap<>();
+        HashMap<Integer, Short> sampleMap = new HashMap<>();
 
         String lineStr = "";
 
@@ -44,7 +44,7 @@ public class SampleManager {
                 String[] values = lineStr.split("\t");
 
                 int sampleId = Integer.valueOf(values[0]);
-                int pheno = Integer.valueOf(values[1]);
+                short pheno = Short.valueOf(values[1]);
 
                 if (!sampleMap.containsKey(sampleId)) {
                     sampleMap.put(sampleId, pheno);
@@ -55,19 +55,23 @@ public class SampleManager {
                         caseNum++;
                     }
                 }
-
-                br.close();
-                in.close();
-                fstream.close();
             }
+
+            br.close();
+            in.close();
+            fstream.close();
         } catch (Exception e) {
             ErrorManager.send(e);
         }
 
+        if(PopSpark.context == null){
+            System.out.println("PopSpark.context is null");
+        }
+        
         sampleMapBroadcast = PopSpark.context.broadcast(sampleMap);
     }
 
-    public static Broadcast<HashMap<Integer, Integer>> getSampleMapBroadcast() {
+    public static Broadcast<HashMap<Integer, Short>> getSampleMapBroadcast() {
         return sampleMapBroadcast;
     }
 

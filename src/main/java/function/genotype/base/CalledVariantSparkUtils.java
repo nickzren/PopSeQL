@@ -25,13 +25,13 @@ public class CalledVariantSparkUtils {
     public static Dataset<Row> getCalledVariantDF() {
         // Set called_variant parquet filepath here
         // return PopSpark.session.read().parquet("/project1/parquet/called_variant/part*");
-        return PopSpark.session.read().parquet("file:///nfs/external/igm-interns/PopSeQL/data/newdb/parquet/called_variant/part*");
+        return PopSpark.session.read().parquet("file:///Users/zr2180/Desktop/data/newdb/parquet/called_variant/part*");
     }
 
     public static Dataset<Row> getReadCoverageDF() {
         // Set read_coverage parquet filepath here
         //return PopSpark.session.read().parquet("/project1/parquet/read_coverage/part*");
-        return PopSpark.session.read().parquet("file:///nfs/external/igm-interns/PopSeQL/data/newdb/parquet/read_coverage/part*");
+        return PopSpark.session.read().parquet("file:///Users/zr2180/Desktop/data/newdb/parquet/read_coverage/part*");
     }
 
     public static Dataset<Row> applyOutputFilters(Dataset<Row> outputDF) {

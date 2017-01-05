@@ -28,7 +28,7 @@ public class CalledVariant extends Region {
 
     public short blockOffset;
 
-    public void addCarrier(Row r, int sampleId, int pheno) {
+    public void addCarrier(Row r, int sampleId, short pheno) {
         int coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
 
         if (coverage == Data.NA) {

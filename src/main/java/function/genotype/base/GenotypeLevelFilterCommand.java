@@ -191,16 +191,16 @@ public class GenotypeLevelFilterCommand {
             if (minCtrlCoverageNoCall == Data.NO_FILTER) {
                 minCtrlCoverageNoCall = minCoverage;
             }
-
-            // Broadcast coverage filters (which are the only ones not filtered using DataFrames filtering)
-            int[] covCallFilters
-                    = {GenotypeLevelFilterCommand.minCtrlCoverageCall, GenotypeLevelFilterCommand.minCaseCoverageCall};
-            int[] covNoCallFilters
-                    = {GenotypeLevelFilterCommand.minCtrlCoverageNoCall, GenotypeLevelFilterCommand.minCaseCoverageNoCall};
-
-            covCallFiltersBroadcast = PopSpark.context.broadcast(covCallFilters);
-            covNoCallFiltersBroadcast = PopSpark.context.broadcast(covNoCallFilters);
         }
+
+        // Broadcast coverage filters (which are the only ones not filtered using DataFrames filtering)
+        int[] covCallFilters
+                = {GenotypeLevelFilterCommand.minCtrlCoverageCall, GenotypeLevelFilterCommand.minCaseCoverageCall};
+        int[] covNoCallFilters
+                = {GenotypeLevelFilterCommand.minCtrlCoverageNoCall, GenotypeLevelFilterCommand.minCaseCoverageNoCall};
+
+        covCallFiltersBroadcast = PopSpark.context.broadcast(covCallFilters);
+        covNoCallFiltersBroadcast = PopSpark.context.broadcast(covNoCallFilters);
     }
 
     public static Broadcast<int[]> getCovCallFiltersBroadcast() {
