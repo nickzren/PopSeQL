@@ -18,8 +18,7 @@ public class CalledVariant extends Region {
     private HashMap<Integer, NonCarrier> noncarrierMap = new HashMap<>();
 //    private int[] genotype = new int[SampleManager.getListSize()];
 //    private int[] coverage = new int[SampleManager.getListSize()];
-    private int[] qcFailSample = {0, 0};
-
+    
     public int variantId;
     public String variantIdStr;
     public String allele;
@@ -29,20 +28,6 @@ public class CalledVariant extends Region {
     public short blockOffset;
 
     public void addCarrier(Row r, int sampleId, short pheno) {
-        int coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
-
-        if (coverage == Data.NA) {
-            qcFailSample[pheno]++;
-            return;
-        }
-
-        if (CalledVariantSparkUtils.covCallFilter[pheno] != Data.NO_FILTER) {
-            if (coverage < CalledVariantSparkUtils.covCallFilter[pheno]) {
-                qcFailSample[pheno]++;
-                return;
-            }
-        }
-
         carrierMap.put(sampleId, new Carrier(r, pheno));
     }
 
@@ -130,9 +115,5 @@ public class CalledVariant extends Region {
 
     public String getRefAllele() {
         return refAllele;
-    }
-
-    public int getQcFailSample(int pheno) {
-        return qcFailSample[pheno];
     }
 }

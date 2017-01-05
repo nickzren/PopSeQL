@@ -1,6 +1,7 @@
 package function.genotype.base;
 
 import global.Data;
+import global.Index;
 
 /**
  *
@@ -8,17 +9,17 @@ import global.Data;
  * @author felipe
  */
 public class NonCarrier {
-    
+
     public int sampleId;
     public int genotype;
     public int coverage;
     public int samplePheno;
-    
+
     public static short getCovValue(char letter) {
         switch (letter) {
             case 'a':
             default:
-                return -1;
+                return Data.NA;
             case 'b':
                 return 3;
             case 'c':
@@ -29,10 +30,10 @@ public class NonCarrier {
                 return 201;
         }
     }
-    
-    public NonCarrier() {   
+
+    public NonCarrier() {
     }
-    
+
     public NonCarrier(int sample_id, short cov, short pheno) {
         sampleId = sample_id;
         coverage = cov;
@@ -40,14 +41,14 @@ public class NonCarrier {
         if (coverage == Data.NA) {
             genotype = Data.NA;
         } else {
-            genotype = 0;
+            genotype = Index.REF;
         }
     }
-    
+
     public int getSamplePheno() {
         return samplePheno;
     }
-    
+
     public int getSampleId() {
         return sampleId;
     }

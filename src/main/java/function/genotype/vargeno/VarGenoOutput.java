@@ -97,7 +97,7 @@ public class VarGenoOutput extends Output {
                 isMinorRef,
                 getGenoStr(noncarrier.getGenotype()),
                 noncarrier.getSampleId(),
-                noncarrier.getSamplePheno() == 0 ? "case" : "ctrl",
+                noncarrier.getSamplePheno() == Index.CTRL ? "ctrl" : "case",
                 majorHomCount[Index.CASE],
                 genoCount[Index.HET][Index.CASE],
                 minorHomCount[Index.CASE],
@@ -108,8 +108,6 @@ public class VarGenoOutput extends Output {
                 minorHomCount[Index.CTRL],
                 FormatManager.getDouble(minorHomFreq[Index.CTRL]),
                 FormatManager.getDouble(hetFreq[Index.CTRL]),
-                calledVar.getQcFailSample(Index.CASE),
-                calledVar.getQcFailSample(Index.CTRL),
                 FormatManager.getDoubleObject(minorAlleleFreq[Index.CASE]), // keep double
                 FormatManager.getDoubleObject(minorAlleleFreq[Index.CTRL]), //keep double
                 FormatManager.getDouble(hweP[Index.CASE]),
@@ -154,8 +152,6 @@ public class VarGenoOutput extends Output {
             DataTypes.createStructField("Minor Hom Ctrl", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("Minor Hom Ctrl Freq", DataTypes.StringType, true),//d
             DataTypes.createStructField("Het Ctrl Freq", DataTypes.StringType, true),//d
-            DataTypes.createStructField("QC Fail Case", DataTypes.IntegerType, true),//i
-            DataTypes.createStructField("QC Fail Ctrl", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("Case Maf", DataTypes.DoubleType, true),//d
             DataTypes.createStructField("Ctrl Maf", DataTypes.DoubleType, true),//d
             DataTypes.createStructField("Case HWE_P", DataTypes.StringType, true),//d

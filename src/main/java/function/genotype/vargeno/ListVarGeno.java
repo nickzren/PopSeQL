@@ -87,10 +87,9 @@ public class ListVarGeno {
                         int variantId = cvRow.getInt(2);
 
                         HashMap<Integer, Short> samplePhenoMap;
-                        CalledVariant calledVariant;
-                        if (calledVariantMap.containsKey(variantId)) {
+                        CalledVariant calledVariant= calledVariantMap.get(variantId);
+                        if (calledVariant != null) {
                             samplePhenoMap = variantSamplePhenoMapMap.get(variantId);
-                            calledVariant = calledVariantMap.get(variantId);
                         } else {
                             samplePhenoMap = (HashMap<Integer, Short>) SampleManager.getSampleMapBroadcast().value().clone();
                             variantSamplePhenoMapMap.put(variantId, samplePhenoMap);

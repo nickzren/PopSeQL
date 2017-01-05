@@ -74,13 +74,7 @@ public class Output /* implements Cloneable */ {
             genoCount[geno][pheno]++;
         }
     }
-
-    public void deleteSampleGeno(int geno, int pheno) {
-        if (geno != Data.NA) {
-            genoCount[geno][pheno]--;
-        }
-    }
-
+    
     public void calculate() {
         calculateAlleleFreq();
 
