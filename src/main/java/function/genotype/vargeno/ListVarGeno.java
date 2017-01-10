@@ -26,6 +26,8 @@ import utils.CommonCommand;
 public class ListVarGeno {
 
     public static void run() {
+        HashMap<Integer, Short> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
+
         // init called_variant data
         Dataset<Row> calledVarDF = CalledVariantSparkUtils.getCalledVariantDF();
 
@@ -46,7 +48,6 @@ public class ListVarGeno {
         // init output dataframe
         Dataset<Row> outputDF = groupedCalledVarDF.cogroup(groupedCoverageDF,
                 (String k, Iterator<Row> calledVarRowIterator, Iterator<Row> covRowIterator) -> {
-                    CalledVariantSparkUtils.initCovFilters();
                     /* Parse coverage blocks */
                     HashMap<Integer, TreeMap<Short, Short>> sampleCovMapMap = new HashMap<>();
                     // \-> Maps each sample_id to a tree map that maps the block offset to the coverage value
@@ -67,8 +68,6 @@ public class ListVarGeno {
                     }
 
                     HashMap<Integer, VarGenoOutput> varGenoOutputMap = new HashMap<>();
-
-                    HashMap<Integer, Short> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
 
                     while (calledVarRowIterator.hasNext()) {
                         Row cvRow = calledVarRowIterator.next();

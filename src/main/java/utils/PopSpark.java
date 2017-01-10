@@ -19,6 +19,7 @@ public class PopSpark {
                 .appName("PopSeQL")
                 .config("spark.sql.crossJoin.enabled", "true")
                 .config("spark.shuffle.spill.compress","false")
+                .config("spark.serializer","org.apache.spark.serializer.KryoSerializer")
                 .getOrCreate();
         PopSpark.context = new JavaSparkContext(session.sparkContext());
         
