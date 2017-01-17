@@ -11,12 +11,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <name>PopSeQL</name>
-        <dependencies>
-        <dependency>
-            <groupId>mysql</groupId> <!-- Mysql connector dependency -->
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.39</version>
-        </dependency>     
+    <dependencies>    
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.11</artifactId>
@@ -28,7 +23,6 @@
             <version>2.0.0</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
