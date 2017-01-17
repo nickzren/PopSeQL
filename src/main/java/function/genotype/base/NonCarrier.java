@@ -6,7 +6,6 @@ import global.Index;
 /**
  *
  * @author nick
- * @author felipe
  */
 public class NonCarrier {
 

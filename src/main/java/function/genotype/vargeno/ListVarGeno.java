@@ -21,7 +21,7 @@ import utils.CommonCommand;
 
 /**
  *
- * @author felipe, nick
+ * @author nick
  */
 public class ListVarGeno {
 

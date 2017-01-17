@@ -7,7 +7,6 @@ import org.apache.spark.sql.Row;
 /**
  *
  * @author nick
- * @author felipe
  */
 public class Carrier extends NonCarrier {
 

@@ -40,13 +40,9 @@ public class CommandManager {
         try {
             initCommandOptions(options);
 
-//            LogManager.initBasicInfo();
-
             initOptionList();
 
             initOutput();
-
-//            LogManager.initPath();
 
             initFunctionOptions();
 
@@ -208,19 +204,9 @@ public class CommandManager {
 
     private static void initOutputPath(String path) {
         try {
-//            File dir = new File(path);
-//            if (!dir.exists()) {
-//                dir.mkdirs();
-//            } else if (!dir.canWrite()) {
-//                System.out.println("\nYou don't have write permissions into " + path + "! \n\nExit...\n");
-//                System.exit(0);
-//            }
-
             CommonCommand.realOutputPath = path;
             CommonCommand.outputDirName = "output";
             CommonCommand.outputPath = path;
-//            CommonCommand.outputDirName = dir.getName();
-//            CommonCommand.outputPath = path + File.separator + dir.getName() + "_";
         } catch (Exception e) {
             System.out.println("\nError in creating an output folder, caused by " + e.toString() + " \n\nExit...\n");
             System.exit(0);
@@ -234,7 +220,6 @@ public class CommandManager {
         while (iterator.hasNext()) {
             option = (CommandOption) iterator.next();
             if (option.getName().equals("--db-host")) {
-//                DBManager.setDBHost(option.getValue());
             } else if (option.getName().equals("--debug")) {
                 CommonCommand.isDebug = true;
             } else {
@@ -258,142 +243,6 @@ public class CommandManager {
                 case "--list-var-geno":
                     VarGenoCommand.isListVarGeno = true;
                     break;
-//                case "--list-var":
-//                    VarCommand.isListVar = true;
-//                    break;
-//                case "--collapsing-dom":
-//                    CollapsingCommand.isCollapsingSingleVariant = true;
-//                    break;
-//                case "--collapsing-rec":
-//                    CollapsingCommand.isCollapsingSingleVariant = true;
-//                    CollapsingCommand.isRecessive = true;
-//                    break;
-//                case "--collapsing-comp-het":
-//                    CollapsingCommand.isCollapsingCompHet = true;
-//                    break;
-//                case "--fisher":
-//                    StatisticsCommand.isFisher = true;
-//                    break;
-//                case "--linear":
-//                    StatisticsCommand.isLinear = true;
-//                    break;
-//                case "--logistic":
-//                    StatisticsCommand.isLogistic = true;
-//                    break;
-//                case "--family-analysis":
-//                    FamilyCommand.isFamilyAnalysis = true;
-//                    break;
-//                case "--list-sibling-comp-het":
-//                    SiblingCommand.isSiblingCompHet = true;
-//                    break;
-//                case "--list-trio-denovo":
-//                    TrioCommand.isTrioDenovo = true;
-//                    break;
-//                case "--list-trio-comp-het":
-//                    TrioCommand.isTrioCompHet = true;
-//                    break;
-//                case "--list-parental-mosaic":
-//                    ParentalCommand.isParentalMosaic = true;
-//                    break;
-//                case "--ped-map":
-//                    PedMapCommand.isPedMap = true;
-//                    break;
-//
-//                // Variant Annotation Functions
-//                case "--list-var-anno":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    VarAnnoCommand.isListVarAnno = true;
-//                    EvsCommand.isIncludeEvs = true;
-//                    ExacCommand.isIncludeExac = true;
-//                    GerpCommand.isIncludeGerp = true;
-//                    TrapCommand.isIncludeTrap = true;
-//                    KaviarCommand.isIncludeKaviar = true;
-//                    KnownVarCommand.isIncludeKnownVar = true;
-//                    RvisCommand.isIncludeRvis = true;
-//                    SubRvisCommand.isIncludeSubRvis = true;
-//                    GenomesCommand.isInclude1000Genomes = true;
-//                    MgiCommand.isIncludeMgi = true;
-//                    break;
-//                case "--list-gene-dx":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    GeneDxCommand.isListGeneDx = true;
-//                    break;
-//                    
-//                // Coverage Analysis Functions    
-//                case "--coverage-summary":
-//                    CoverageCommand.isCoverageSummary = true;
-//                    break;
-//                case "--site-coverage-summary":
-//                    CoverageCommand.isSiteCoverageSummary = true;
-//                    break;
-//                case "--coverage-comparison":
-//                    CoverageCommand.isCoverageComparison = true;
-//                    break;
-//                case "--site-coverage-comparison":
-//                    CoverageCommand.isSiteCoverageComparison = true;
-//                    break;
-                    
-                // External Datasets Functions    
-//                case "--list-evs":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    EvsCommand.isListEvs = true;
-//                    EvsCommand.isIncludeEvs = true;
-//                    break;
-//                case "--list-exac":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    ExacCommand.isListExac = true;
-//                    ExacCommand.isIncludeExac = true;
-//                    break;
-//                case "--list-known-var":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    KnownVarCommand.isListKnownVar = true;
-//                    KnownVarCommand.isIncludeKnownVar = true;
-//                    break;
-//                case "--list-flanking-seq":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    FlankingCommand.isListFlankingSeq = true;
-//                    break;
-//                case "--list-kaviar":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    KaviarCommand.isListKaviar = true;
-//                    KaviarCommand.isIncludeKaviar = true;
-//                    break;
-//                case "--list-gerp":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    GerpCommand.isListGerp = true;
-//                    GerpCommand.isIncludeGerp = true;
-//                    break;
-//                case "--list-trap":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    TrapCommand.isListTrap = true;
-//                    TrapCommand.isIncludeTrap = true;
-//                    break;    
-//                case "--list-sub-rvis":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    SubRvisCommand.isListSubRvis = true;
-//                    SubRvisCommand.isIncludeSubRvis = true;
-//                    break;
-//                case "--list-rvis":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    RvisCommand.isListRvis = true;
-//                    RvisCommand.isIncludeRvis = true;
-//                    break;
-//                case "--list-1000-genomes":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    GenomesCommand.isList1000Genomes = true;
-//                    GenomesCommand.isInclude1000Genomes = true;
-//                    break;
-//                case "--list-mgi":
-//                    CommonCommand.isNonSampleAnalysis = true;
-//                    MgiCommand.isListMgi = true;
-//                    MgiCommand.isIncludeMgi = true;
-//                    break;
-//                case "--test":
-//                    // Test Functions
-////                CommonCommand.isNonDBAnalysis = true;
-////                    CommonCommand.isNonSampleAnalysis = true;
-//                    TestCommand.isTest = true;
-//                    break;
                 default:
                     continue;
             }
@@ -412,53 +261,7 @@ public class CommandManager {
     private static void initSubOptions() throws Exception {
         if (VarGenoCommand.isListVarGeno) { // Genotype Analysis Functions
             VarGenoCommand.initOptions(optionList.iterator());
-        } //else if (VarCommand.isListVar) {
-//
-//        } else if (CollapsingCommand.isCollapsingSingleVariant) {
-//            CollapsingCommand.initSingleVarOptions(optionList.iterator());
-//        } else if (CollapsingCommand.isCollapsingCompHet) {
-//            CollapsingCommand.initCompHetOptions(optionList.iterator());
-//        } else if (StatisticsCommand.isFisher) {
-//            StatisticsCommand.initFisherOptions(optionList.iterator());
-//        } else if (StatisticsCommand.isLinear) {
-//            StatisticsCommand.initLinearOptions(optionList.iterator());
-//        } else if (StatisticsCommand.isLogistic) {
-//            StatisticsCommand.initLogisticOptions(optionList.iterator());
-//        } else if (FamilyCommand.isFamilyAnalysis) {
-//            FamilyCommand.initOptions(optionList.iterator());
-//        } else if (SiblingCommand.isSiblingCompHet) {
-//
-//        } else if (TrioCommand.isTrioDenovo) {
-//            TrioCommand.initDenovoOptions(optionList.iterator());
-//        } else if (TrioCommand.isTrioCompHet) {
-//            TrioCommand.initCompHetOptions(optionList.iterator());
-//        } else if (ParentalCommand.isParentalMosaic) {
-//            ParentalCommand.initOptions(optionList.iterator());
-//        } else if (PedMapCommand.isPedMap) {
-//            PedMapCommand.initOptions(optionList.iterator());
-//        } else if (VarAnnoCommand.isListVarAnno) { // Variant Annotation Functions
-//
-//        } else if (GeneDxCommand.isListGeneDx) {
-//
-//        } else if (CoverageCommand.isCoverageSummary) { // Coverage Analysis Functions
-//            CoverageCommand.initCoverageSummary(optionList.iterator());
-//        } else if (CoverageCommand.isSiteCoverageSummary) {
-//
-//        } else if (CoverageCommand.isCoverageComparison) {
-//            CoverageCommand.initCoverageComparison(optionList.iterator());
-//        } else if (CoverageCommand.isSiteCoverageComparison) {
-//            CoverageCommand.initCoverageComparisonSite(optionList.iterator());
-//        } else if (EvsCommand.isListEvs) { // External Datasets Functions
-//
-//        } else if (ExacCommand.isListExac) {
-//
-//        } else if (KnownVarCommand.isListKnownVar) {
-//
-//        } else if (FlankingCommand.isListFlankingSeq) {
-//            FlankingCommand.initOptions(optionList.iterator());
-//        } else if (TestCommand.isTest) { // Test Functions
-//
-//        }
+        } 
     }
 
     private static void initCommonOptions() throws Exception {

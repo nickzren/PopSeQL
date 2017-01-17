@@ -9,7 +9,6 @@ import org.apache.spark.sql.Row;
 /**
  *
  * @author nick
- * @author felipe
  */
 public class CalledVariant extends Region {
 
