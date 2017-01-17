@@ -2,13 +2,20 @@ package function.genotype.base;
 
 import global.Data;
 import java.util.Iterator;
+import java.util.LinkedList;
+import org.apache.spark.sql.Column;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.lit;
+import static org.apache.spark.sql.functions.when;
 import static utils.CommandManager.checkRangeValid;
 import static utils.CommandManager.checkValueValid;
 import static utils.CommandManager.getValidDouble;
 import static utils.CommandManager.getValidInteger;
-import static utils.CommandManager.getValidPath;
 import static utils.CommandManager.getValidRange;
 import utils.CommandOption;
+import utils.PopSpark;
 
 /**
  *
@@ -27,8 +34,6 @@ public class GenotypeLevelFilterCommand {
     public static int minCaseCoverageNoCall = Data.NO_FILTER;
     public static int minCtrlCoverageCall = Data.NO_FILTER;
     public static int minCtrlCoverageNoCall = Data.NO_FILTER;
-    public static int minVarPresent = 1; // special case
-    public static int minCaseCarrier = Data.NO_FILTER;
     public static String[] varStatus; // null: no filer or all    
     public static double[] hetPercentAltRead = null; // {min, max}
     public static double[] homPercentAltRead = null;
@@ -55,7 +60,7 @@ public class GenotypeLevelFilterCommand {
             option = (CommandOption) iterator.next();
             switch (option.getName()) {
                 case "--sample":
-                    sampleFile = getValidPath(option);
+                    sampleFile = option.getValue();
                     break;
                 case "--called-variant":
                     calledVariantDataPath = option.getValue();
@@ -70,14 +75,6 @@ public class GenotypeLevelFilterCommand {
                 case "--min-coverage":
                     checkValueValid(new String[]{"0", "3", "10", "20", "201"}, option);
                     minCoverage = getValidInteger(option);
-                    break;
-                case "--min-variant-present":
-                    checkValueValid(Data.NO_FILTER, 0, option);
-                    minVarPresent = getValidInteger(option);
-                    break;
-                case "--min-case-carrier":
-                    checkValueValid(Data.NO_FILTER, 0, option);
-                    minCaseCarrier = getValidInteger(option);
                     break;
                 case "--var-status":
                     checkValueValid(VARIANT_STATUS, option);
@@ -141,5 +138,129 @@ public class GenotypeLevelFilterCommand {
 
             iterator.remove();
         }
+    }
+
+    public static Dataset<Row> getCalledVariantDF() {
+        return PopSpark.session.read().parquet(calledVariantDataPath);
+    }
+
+    public static Dataset<Row> getReadCoverageDF() {
+        return PopSpark.session.read().parquet(readCoverageDataPath);
+    }
+
+    public static Dataset<Row> applyCarrierFilters(Dataset<Row> carrierDF) {
+        LinkedList<Column> l = new LinkedList<>();
+
+        if (varStatus != null) {
+            Column c = col("pass_fail_status").isin((Object[]) varStatus);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (genotypeQualGQ != Data.NO_FILTER) {
+            Column c = col("genotype_qual_GQ").geq(genotypeQualGQ);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (strandBiasFS != Data.NO_FILTER) {
+            Column c = col("strand_bias_FS").leq(strandBiasFS);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (haplotypeScore != Data.NO_FILTER) {
+            Column c = col("haplotype_score").leq(haplotypeScore);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (rmsMapQualMQ != Data.NO_FILTER) {
+            Column c = col("rms_map_qual_MQ").geq(rmsMapQualMQ);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (qualByDepthQD != Data.NO_FILTER) {
+            Column c = col("qual_by_depth_QD").geq(qualByDepthQD);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (qual != Data.NO_FILTER) {
+            Column c = col("qual").geq(qual);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (readPosRankSum != Data.NO_FILTER) {
+            Column c = col("read_pos_rank_sum").geq(readPosRankSum);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (mapQualRankSum != Data.NO_FILTER) {
+            Column c = col("map_qual_rank_sum").geq(mapQualRankSum);
+            if (isQcMissingIncluded) {
+                l.add(col("pass_fail_status").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+
+        // if there is some filter to be applied, build where clause
+        if (l.size() > 0) {
+//            Column whereCondition = l.pop();
+            Column whereCondition = lit(true);
+            while (l.size() > 0) {
+                whereCondition = whereCondition.and(l.pop());
+            }
+            return carrierDF.withColumn("samtools_raw_coverage",
+                    when(whereCondition, col("samtools_raw_coverage"))
+                    .otherwise(lit((short) Data.NA)));
+        }
+
+        return carrierDF;
+    }
+
+    public static Dataset<Row> applyOutputFilters(Dataset<Row> outputDF) {
+        LinkedList<Column> l = new LinkedList<>();
+        if (minCtrlMaf != Data.NO_FILTER) {
+            l.add(col("Ctrl Maf").geq(minCtrlMaf));
+        }
+        if (maxCtrlMaf != Data.NO_FILTER) {
+            l.add(col("Ctrl Maf").leq(maxCtrlMaf));
+        }
+        if (maxQcFailSample != Data.NO_FILTER) {
+            l.add(col("QC Fail Case").plus(col("QC Fail Ctrl")).leq(maxQcFailSample));
+        }
+
+        // if there is some filter to be applied, build where clause
+        if (l.size() > 0) {
+            System.out.println("\t> Applying output filters");
+            Column whereCondition = l.pop();
+            while (l.size() > 0) {
+                whereCondition = whereCondition.and(l.pop());
+            }
+            return outputDF.where(whereCondition);
+        }
+
+        return outputDF;
     }
 }

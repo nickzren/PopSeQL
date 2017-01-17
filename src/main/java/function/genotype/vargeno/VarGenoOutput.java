@@ -19,8 +19,6 @@ import utils.FormatManager;
  */
 public class VarGenoOutput extends Output {
 
-    public static String[] colsToBeDropped = {"var_present", "case_carrier"};
-
     public void appendRowsToList(LinkedList<Row> l) {
         for (Carrier c : calledVar.getCarrierMap().values()) {
             if (isQualifiedGeno(c.getGenotype())) {
@@ -126,9 +124,7 @@ public class VarGenoOutput extends Output {
                 FormatManager.getDouble(carrier != null ? carrier.getQualByDepthQD() : Data.NA),
                 FormatManager.getDouble(carrier != null ? carrier.getQual() : Data.NA),
                 FormatManager.getDouble(carrier != null ? carrier.getReadPosRankSum() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getMapQualRankSum() : Data.NA),
-                getVarPresent(),
-                (GenotypeLevelFilterCommand.minCaseCarrier != Data.NO_FILTER ? getCaseCarrier() : null)
+                FormatManager.getDouble(carrier != null ? carrier.getMapQualRankSum() : Data.NA)
         );
     }
 
@@ -171,10 +167,7 @@ public class VarGenoOutput extends Output {
             DataTypes.createStructField("Qual", DataTypes.StringType, true),//d
             DataTypes.createStructField("Read Pos Rank Sum", DataTypes.StringType, true),//d
             DataTypes.createStructField("Map Qual Rank Sum", DataTypes.StringType, true),//d
-
-            //extra fields - update colsToBeDropped with changes !!
-            DataTypes.createStructField("var_present", DataTypes.IntegerType, true),
-            DataTypes.createStructField("case_carrier", DataTypes.IntegerType, true),};
+        };
         return new StructType(fields);
     }
 

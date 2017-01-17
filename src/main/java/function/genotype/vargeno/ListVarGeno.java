@@ -1,9 +1,8 @@
 package function.genotype.vargeno;
 
 import function.genotype.base.CalledVariant;
-import function.genotype.base.CalledVariantSparkUtils;
 import function.genotype.base.Carrier;
-import function.genotype.base.CarrierSparkUtils;
+import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.NonCarrier;
 import function.genotype.base.SampleManager;
 import utils.PopSpark;
@@ -29,9 +28,9 @@ public class ListVarGeno {
         HashMap<Integer, Short> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
 
         // init called_variant data
-        Dataset<Row> calledVarDF = CalledVariantSparkUtils.getCalledVariantDF();
+        Dataset<Row> calledVarDF = GenotypeLevelFilterCommand.getCalledVariantDF();
 
-        Dataset<Row> filteredCalledVarDF = CarrierSparkUtils.applyCarrierFilters(calledVarDF);
+        Dataset<Row> filteredCalledVarDF = GenotypeLevelFilterCommand.applyCarrierFilters(calledVarDF);
 
         KeyValueGroupedDataset<String, Row> groupedCalledVarDF = filteredCalledVarDF.groupByKey(
                 (Row r) -> r.getString(0), // group by block id
@@ -39,7 +38,7 @@ public class ListVarGeno {
 
         // init read_coverage data
         Dataset<Row> covDF
-                = CalledVariantSparkUtils.getReadCoverageDF();
+                = GenotypeLevelFilterCommand.getReadCoverageDF();
 
         KeyValueGroupedDataset<String, Row> groupedCoverageDF = covDF.groupByKey(
                 (Row r) -> r.getString(0), // group by block id
@@ -120,10 +119,7 @@ public class ListVarGeno {
                 RowEncoder.apply(VarGenoOutput.getSchema()));
 
         // Filter and output data
-        outputDF = CalledVariantSparkUtils.applyOutputFilters(outputDF);
-
-        // Drop columns that are used for output filters only
-        outputDF = outputDF.drop(VarGenoOutput.colsToBeDropped);
+        outputDF = GenotypeLevelFilterCommand.applyOutputFilters(outputDF);
 
         // Write output
         outputDF
@@ -133,6 +129,6 @@ public class ListVarGeno {
                 .mode("overwrite")
                 .option("header", "true")
                 .option("nullValue", "NA")
-                .csv(CommonCommand.realOutputPath);
+                .csv(CommonCommand.outputPath);
     }
 }

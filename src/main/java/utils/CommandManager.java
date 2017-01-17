@@ -1,19 +1,8 @@
 package utils;
 
-//import function.annotation.base.AnnotationLevelFilterCommand;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import global.Data;
-
-//import function.genotype.statistics.StatisticsCommand;
-
 import function.genotype.vargeno.VarGenoCommand;
-
-//import function.variant.base.VariantLevelFilterCommand;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,7 +17,6 @@ public class CommandManager {
     private static String[] optionArray;
     private static ArrayList<CommandOption> optionList = new ArrayList<>();
     public static String command = "";
-    private static String commandFile = "";
 
     private static void initCommand4Debug() {
         String cmd = "";
@@ -50,8 +38,6 @@ public class CommandManager {
 
             initCommonOptions();
 
-            initOptions4Debug();
-
             outputInvalidOptions();
         } catch (Exception e) {
             ErrorManager.send(e);
@@ -68,11 +54,7 @@ public class CommandManager {
             }
         } else // init options from command file or command line
         {
-            if (isCommandFileIncluded(options)) {
-                initCommandFromFile();
-            } else {
-                optionArray = options;
-            }
+            optionArray = options;
         }
 
         cleanUpOddSymbol();
@@ -89,51 +71,6 @@ public class CommandManager {
         }
     }
 
-    private static boolean isCommandFileIncluded(String[] options) {
-        for (int i = 0; i < options.length; i++) {
-            if (options[i].equals("--command-file")) {
-                if (isFileExist(options[i + 1])) {
-                    commandFile = options[i + 1];
-                } else {
-                    System.out.println("\nInvalid value '" + options[i + 1]
-                            + "' for '--command-file' option.");
-                    System.exit(0);
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static void initCommandFromFile() {
-        File f = new File(commandFile);
-
-        String lineStr = "";
-        String cmd = "";
-
-        try {
-            FileInputStream fstream = new FileInputStream(f);
-            DataInputStream in = new DataInputStream(new FileInputStream(f));
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
-            while ((lineStr = br.readLine()) != null) {
-                cmd += lineStr + " ";
-            }
-
-            br.close();
-            in.close();
-            fstream.close();
-        } catch (Exception e) {
-            System.err.println(e.toString());
-            e.printStackTrace();
-            ErrorManager.send(e);
-        }
-
-        optionArray = cmd.split("\\s+");
-    }
-
     private static void initCommand4Log() {
         String version = Data.version;
 
@@ -143,12 +80,8 @@ public class CommandManager {
 
         command = "atav_" + version + ".sh";
 
-        if (commandFile.isEmpty()) {
-            for (String str : optionArray) {
-                command += " " + str;
-            }
-        } else {
-            command += " " + "--command-file " + commandFile;
+        for (String str : optionArray) {
+            command += " " + str;
         }
     }
 
@@ -190,7 +123,7 @@ public class CommandManager {
         while (iterator.hasNext()) {
             option = (CommandOption) iterator.next();
             if (option.getName().equals("--out")) {
-                initOutputPath(option.getValue());
+                CommonCommand.outputPath = option.getValue();
                 iterator.remove();
                 break;
             }
@@ -199,34 +132,6 @@ public class CommandManager {
         if (CommonCommand.outputPath.isEmpty()) {
             System.out.println("\nPlease specify output path: --out $PATH \n\nExit...\n");
             System.exit(0);
-        }
-    }
-
-    private static void initOutputPath(String path) {
-        try {
-            CommonCommand.realOutputPath = path;
-            CommonCommand.outputDirName = "output";
-            CommonCommand.outputPath = path;
-        } catch (Exception e) {
-            System.out.println("\nError in creating an output folder, caused by " + e.toString() + " \n\nExit...\n");
-            System.exit(0);
-        }
-    }
-
-    private static void initOptions4Debug() {
-        Iterator<CommandOption> iterator = optionList.iterator();
-        CommandOption option;
-
-        while (iterator.hasNext()) {
-            option = (CommandOption) iterator.next();
-            if (option.getName().equals("--db-host")) {
-            } else if (option.getName().equals("--debug")) {
-                CommonCommand.isDebug = true;
-            } else {
-                continue;
-            }
-
-            iterator.remove();
         }
     }
 
@@ -261,14 +166,13 @@ public class CommandManager {
     private static void initSubOptions() throws Exception {
         if (VarGenoCommand.isListVarGeno) { // Genotype Analysis Functions
             VarGenoCommand.initOptions(optionList.iterator());
-        } 
+        }
     }
 
     private static void initCommonOptions() throws Exception {
 //        VariantLevelFilterCommand.initOptions(optionList.iterator());
 
 //        AnnotationLevelFilterCommand.initOptions(optionList.iterator());
-
         GenotypeLevelFilterCommand.initOptions(optionList.iterator());
     }
 
@@ -282,7 +186,7 @@ public class CommandManager {
             hasInvalid = true;
 
             option = (CommandOption) iterator.next();
-            
+
             System.err.println("Invalid option: " + option.getName());
 
 //            LogManager.writeAndPrint("Invalid option: " + option.getName());
@@ -410,35 +314,6 @@ public class CommandManager {
         }
 
         return i;
-    }
-
-    /*
-     * output invalid option & value if value is a valid file path return either
-     * a valid file path or a string value ATAV stop
-     */
-    public static String getValidPath(CommandOption option) {
-        String path = option.getValue();
-
-//        if (!isFileExist(path)) {
-//            outputInvalidOptionValue(option);
-//        }
-
-        return path;
-    }
-
-    private static boolean isFileExist(String path) {
-        if (path.isEmpty()) {
-            return false;
-        }
-
-        if (path.contains(File.separator)) {
-            File file = new File(path);
-            if (!file.isFile()) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public static void outputInvalidOptionValue(CommandOption option) {
