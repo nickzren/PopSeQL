@@ -10,9 +10,7 @@ import org.apache.spark.sql.SparkSession;
 public class PopSpark {
 
     public static SparkSession session;
-    public static JavaSparkContext context;
-    public static String jdbcURL = "jdbc:mysql://localhost:3306/annodb?user=test&password=test";
-    
+    public static JavaSparkContext context;    
     
     public static void init() {
         PopSpark.session = SparkSession.builder()

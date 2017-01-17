@@ -1,9 +1,7 @@
 package function.genotype.base;
 
 import global.Data;
-import utils.PopSpark;
 import java.util.Iterator;
-import org.apache.spark.broadcast.Broadcast;
 import static utils.CommandManager.checkRangeValid;
 import static utils.CommandManager.checkValueValid;
 import static utils.CommandManager.getValidDouble;
@@ -44,9 +42,8 @@ public class GenotypeLevelFilterCommand {
     public static double mapQualRankSum = Data.NO_FILTER;
     public static boolean isQcMissingIncluded = false;
     public static int maxQcFailSample = Data.NO_FILTER;
-
-    public static Broadcast<int[]> covCallFiltersBroadcast;
-    public static Broadcast<int[]> covNoCallFiltersBroadcast;
+    public static String calledVariantDataPath = ""; // input data format required parquet format
+    public static String readCoverageDataPath = "";  // input data format required parquet format
 
     public static final String[] VARIANT_STATUS = {"pass", "pass+intermediate", "all"};
 
@@ -58,47 +55,21 @@ public class GenotypeLevelFilterCommand {
             option = (CommandOption) iterator.next();
             switch (option.getName()) {
                 case "--sample":
-                case "--pedinfo":
                     sampleFile = getValidPath(option);
                     break;
-                case "--all-sample":
-                    isAllSample = true;
+                case "--called-variant":
+                    calledVariantDataPath = option.getValue();
                     break;
-                case "--all-non-ref":
-                    isAllNonRef = true;
+                case "--read-coverage":
+                    readCoverageDataPath = option.getValue();
                     break;
-                case "--all-geno":
-                    isAllGeno = true;
-                    break;
-                case "--ctrlMAF":
                 case "--ctrl-maf":
-                case "--max-ctrl-maf":
                     checkValueValid(0.5, 0, option);
                     maxCtrlMaf = getValidDouble(option);
-                    break;
-                case "--min-ctrl-maf":
-                    checkValueValid(0.5, 0, option);
-                    minCtrlMaf = getValidDouble(option);
                     break;
                 case "--min-coverage":
                     checkValueValid(new String[]{"0", "3", "10", "20", "201"}, option);
                     minCoverage = getValidInteger(option);
-                    break;
-                case "--min-case-coverage-call":
-                    checkValueValid(Data.NO_FILTER, 0, option);
-                    minCaseCoverageCall = getValidInteger(option);
-                    break;
-                case "--min-case-coverage-no-call":
-                    checkValueValid(new String[]{"3", "10", "20", "201"}, option);
-                    minCaseCoverageNoCall = getValidInteger(option);
-                    break;
-                case "--min-ctrl-coverage-call":
-                    checkValueValid(Data.NO_FILTER, 0, option);
-                    minCtrlCoverageCall = getValidInteger(option);
-                    break;
-                case "--min-ctrl-coverage-no-call":
-                    checkValueValid(new String[]{"3", "10", "20", "201"}, option);
-                    minCtrlCoverageNoCall = getValidInteger(option);
                     break;
                 case "--min-variant-present":
                     checkValueValid(Data.NO_FILTER, 0, option);
@@ -170,44 +141,5 @@ public class GenotypeLevelFilterCommand {
 
             iterator.remove();
         }
-
-        initMinCoverage();
-    }
-
-    private static void initMinCoverage() {
-        if (minCoverage != Data.NO_FILTER) {
-            if (minCaseCoverageCall == Data.NO_FILTER) {
-                minCaseCoverageCall = minCoverage;
-            }
-
-            if (minCaseCoverageNoCall == Data.NO_FILTER) {
-                minCaseCoverageNoCall = minCoverage;
-            }
-
-            if (minCtrlCoverageCall == Data.NO_FILTER) {
-                minCtrlCoverageCall = minCoverage;
-            }
-
-            if (minCtrlCoverageNoCall == Data.NO_FILTER) {
-                minCtrlCoverageNoCall = minCoverage;
-            }
-        }
-
-        // Broadcast coverage filters (which are the only ones not filtered using DataFrames filtering)
-        int[] covCallFilters
-                = {GenotypeLevelFilterCommand.minCtrlCoverageCall, GenotypeLevelFilterCommand.minCaseCoverageCall};
-        int[] covNoCallFilters
-                = {GenotypeLevelFilterCommand.minCtrlCoverageNoCall, GenotypeLevelFilterCommand.minCaseCoverageNoCall};
-
-        covCallFiltersBroadcast = PopSpark.context.broadcast(covCallFilters);
-        covNoCallFiltersBroadcast = PopSpark.context.broadcast(covNoCallFilters);
-    }
-
-    public static Broadcast<int[]> getCovCallFiltersBroadcast() {
-        return covCallFiltersBroadcast;
-    }
-
-    public static Broadcast<int[]> getCovNoCallFiltersBroadcast() {
-        return covNoCallFiltersBroadcast;
     }
 }

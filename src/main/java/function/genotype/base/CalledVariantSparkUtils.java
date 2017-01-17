@@ -14,24 +14,12 @@ import static org.apache.spark.sql.functions.col;
  */
 public class CalledVariantSparkUtils {
 
-    public static int[] covCallFilter;
-    public static int[] covNoCallFilter;
-
-    public static void initCovFilters() {
-        covCallFilter = GenotypeLevelFilterCommand.getCovCallFiltersBroadcast().value();
-        covNoCallFilter = GenotypeLevelFilterCommand.getCovNoCallFiltersBroadcast().value();
-    }
-
     public static Dataset<Row> getCalledVariantDF() {
-        // Set called_variant parquet filepath here
-         return PopSpark.session.read().parquet("/parquet/called_variant/part*");
-//        return PopSpark.session.read().parquet("file:///Users/zr2180/Desktop/data/newdb/parquet/called_variant/part*");
+        return PopSpark.session.read().parquet(GenotypeLevelFilterCommand.calledVariantDataPath);
     }
 
     public static Dataset<Row> getReadCoverageDF() {
-        // Set read_coverage parquet filepath here
-        return PopSpark.session.read().parquet("/parquet/read_coverage/part*");
-//        return PopSpark.session.read().parquet("file:///Users/zr2180/Desktop/data/newdb/parquet/read_coverage/part*");
+        return PopSpark.session.read().parquet(GenotypeLevelFilterCommand.readCoverageDataPath);
     }
 
     public static Dataset<Row> applyOutputFilters(Dataset<Row> outputDF) {
