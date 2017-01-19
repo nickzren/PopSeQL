@@ -20,9 +20,9 @@ public class Output /* implements Cloneable */ {
     protected int[][] genoCount = new int[3][2];
     protected int[] minorHomCount = new int[2];
     protected int[] majorHomCount = new int[2];
-    protected double[] hetFreq = new double[2];
-    protected double[] minorAlleleFreq = new double[2];
-    protected double[] minorHomFreq = new double[2];
+    protected float[] hetFreq = new float[2];
+    protected float[] minorAlleleFreq = new float[2];
+    protected float[] minorHomFreq = new float[2];
     protected double[] hweP = new double[2];
 
     public Output(CalledVariant c) {
@@ -53,15 +53,15 @@ public class Output /* implements Cloneable */ {
         return majorHomCount;
     }
 
-    public double[] getHetFreq() {
+    public float[] getHetFreq() {
         return hetFreq;
     }
 
-    public double[] getMinorAlleleFreq() {
+    public float[] getMinorAlleleFreq() {
         return minorAlleleFreq;
     }
 
-    public double[] getMinorHomFreq() {
+    public float[] getMinorHomFreq() {
         return minorHomFreq;
     }
 
@@ -69,8 +69,8 @@ public class Output /* implements Cloneable */ {
         return hweP;
     }
 
-    public void addSampleGeno(int geno, int pheno) {
-        if (geno != Data.NA) {
+    public void addSampleGeno(byte geno, int pheno) {
+        if (geno != Data.BYTE_NA) {
             genoCount[geno][pheno]++;
         }
     }
@@ -164,16 +164,16 @@ public class Output /* implements Cloneable */ {
         }
     }
 
-    public String getGenoStr(int geno) {
+    public String getGenoStr(byte geno) {
         switch (geno) {
-            case 2:
+            case Index.HOM:
                 return "hom";
-            case 1:
+            case Index.HET:
                 return "het";
-            case 0:
+            case Index.REF:
                 return "hom ref";
-            case Data.NA:
-                return "NA";
+            case Data.BYTE_NA:
+                return Data.STRING_NA;
         }
 
         return "";
@@ -207,22 +207,22 @@ public class Output /* implements Cloneable */ {
      * if ref is minor then only het & ref are qualified samples. If ref is
      * major then only hom & het are qualified samples.
      */
-    public boolean isQualifiedGeno(int geno) {
+    public boolean isQualifiedGeno(byte geno) {
         if (GenotypeLevelFilterCommand.isAllGeno) {
             return true;
         }
 
         if (GenotypeLevelFilterCommand.isAllNonRef) {
-            if (geno == 2 || geno == 1) {
+            if (geno == Index.HOM || geno == Index.HET) {
                 return true;
             }
         }
 
         if (isMinorRef) {
-            if (geno == 0 || geno == 1) {
+            if (geno == Index.REF || geno == Index.HET) {
                 return true;
             }
-        } else if (geno == 2 || geno == 1) {
+        } else if (geno == Index.HOM || geno == Index.HET) {
             return true;
         }
 

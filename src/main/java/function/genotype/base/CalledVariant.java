@@ -82,7 +82,7 @@ public class CalledVariant extends Region {
             try {
                 return Integer.parseInt(chrStr);
             } catch (NumberFormatException e) {
-                return Data.NA;
+                return Data.INTEGER_NA;
             }
         }
     }

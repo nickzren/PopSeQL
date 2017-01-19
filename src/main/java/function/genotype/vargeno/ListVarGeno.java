@@ -25,7 +25,7 @@ import utils.CommonCommand;
 public class ListVarGeno {
 
     public static void run() {
-        HashMap<Integer, Short> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
+        HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
 
         // init called_variant data
         Dataset<Row> calledVarDF = GenotypeLevelFilterCommand.getCalledVariantDF();
@@ -83,7 +83,7 @@ public class ListVarGeno {
                             varGenoOutputMap.put(variantId, varGenoOutput);
                         }
 
-                        short pheno = samplePhenoMap.get(sampleId);
+                        byte pheno = samplePhenoMap.get(sampleId);
                         Carrier carrier = new Carrier(cvRow, pheno);
                         varGenoOutput.getCalledVar().addCarrier(sampleId, carrier);
                         varGenoOutput.addSampleGeno(carrier.getGenotype(), pheno);
@@ -93,9 +93,9 @@ public class ListVarGeno {
 
                     for (VarGenoOutput varGenoOutput : varGenoOutputMap.values()) {
                         // init non-carrier data
-                        for (Map.Entry<Integer, Short> samplePhenoEntry : samplePhenoMap.entrySet()) {
+                        for (Map.Entry<Integer, Byte> samplePhenoEntry : samplePhenoMap.entrySet()) {
                             int sampleId = samplePhenoEntry.getKey();
-                            short pheno = samplePhenoEntry.getValue();
+                            byte pheno = samplePhenoEntry.getValue();
 
                             if (!varGenoOutput.getCalledVar().getCarrierMap().containsKey(sampleId)) { // it is non-carrier sample then
                                 TreeMap<Short, Short> posCovTreeMap = sampleCovMapMap.get(sampleId);

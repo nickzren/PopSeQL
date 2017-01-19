@@ -3,7 +3,6 @@ package utils;
 import global.Data;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Arrays;
 
 /**
  *
@@ -16,8 +15,24 @@ public class FormatManager {
     private static NumberFormat pformat3 = new DecimalFormat("0.######");
 
     public static String getDouble(double value) {
-        if (value == Data.NA) {
-            return "NA";
+        if (value == Data.DOUBLE_NA) {
+            return Data.STRING_NA;
+        }
+
+        if (value < 0.001 && value > 0) {
+            return pformat2.format(value);
+        } else {
+            return pformat1.format(value);
+        }
+    }   
+
+    public static String getFloat(float value) {
+        if (value == Data.FLOAT_NA) {
+            return Data.STRING_NA;
+        }
+
+        if (value == 0.0f) {
+            return "0";
         }
 
         if (value < 0.001 && value > 0) {
@@ -27,90 +42,28 @@ public class FormatManager {
         }
     }
     
-    public static Double getDoubleObject(double value) {
-        if (value == Data.NA) {
-            return null;
-        }
-
-        return (Double) value;
-    }
-
-    public static String getSixDegitDouble(double value) {
-        if (value == Data.NA) {
-            return "NA";
-        }
-
-        return pformat3.format(value);
-    }
-
-    public static String getInteger(int value) {
-        if (value == Data.NA) {
-            return "NA";
+    public static String getByte(byte value) {
+        if (value == Data.BYTE_NA) {
+            return Data.STRING_NA;
         }
 
         return String.valueOf(value);
     }
-    
-    public static Integer getIntegerObject(int value) {
-        if (value == Data.NA) {
-            return null;
+
+    public static String getShort(short value) {
+        if (value == Data.SHORT_NA) {
+            return Data.STRING_NA;
         }
 
-        return (Integer) value;
+        return String.valueOf(value);
     }
 
-    public static String getString(String str) {
-        if (str == null || str.equals("-") || str.equals("")) {
-            str = "NA";
+    public static String getInteger(int value) {
+        if (value == Data.INTEGER_NA || value == Data.SHORT_NA) {
+            return Data.STRING_NA;
         }
 
-        return str;
-    }
-
-    public static String getFloat(float value) {
-        if (value == Data.NA) {
-            return "NA";
-        }
-
-        if (value == 0.0f) {
-            return "0";
-        }
-
-        return pformat3.format(value);
-    }
-
-    public static float getFloat(String str) {
-        if (str == null || str.equals("NA")) {
-            return Data.NA;
-        }
-
-        return Float.valueOf(str);
-    }
-
-    public static String getFunction(String str) {
-        if (str == null) {
-            str = "INTERGENIC";
-        }
-
-        return str;
-    }
-
-    public static String getPercAltRead(double alt, int gatkFilteredCoverage) {
-        if (gatkFilteredCoverage == 0
-                || gatkFilteredCoverage == Data.NA) {
-            return "NA";
-        } else {
-            return getDouble(alt / gatkFilteredCoverage);
-        }
-    }
-    
-    public static Double getPercAltReadDoubleObject(double alt, int gatkFilteredCoverage) {
-        if (gatkFilteredCoverage == 0
-                || gatkFilteredCoverage == Data.NA) {
-            return null;
-        } else {
-            return getDoubleObject(alt / gatkFilteredCoverage);
-        }
+        return String.valueOf(value);
     }
 
     public static boolean isDouble(String input) {
@@ -128,42 +81,6 @@ public class FormatManager {
             return true;
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    public static int[][] deepCopyIntArray(int[][] original) {
-        final int[][] result = new int[original.length][];
-        for (int i = 0; i < original.length; i++) {
-            result[i] = Arrays.copyOf(original[i], original[i].length);
-        }
-
-        return result;
-    }
-
-    public static int[] deepCopyIntArray(int[] original) {
-        return Arrays.copyOf(original, original.length);
-    }
-
-    public static double[][] deepCopyDoubleArray(double[][] original) {
-        final double[][] result = new double[original.length][];
-        for (int i = 0; i < original.length; i++) {
-            result[i] = Arrays.copyOf(original[i], original[i].length);
-        }
-
-        return result;
-    }
-
-    public static double[] deepCopyDoubleArray(double[] original) {
-        return Arrays.copyOf(original, original.length);
-    }
-
-    public static void deleteLastComma(StringBuilder sb) {
-        if (sb.length() != 0) {
-            int lastCommaIndex = sb.lastIndexOf(",");
-
-            if (lastCommaIndex == (sb.length() - 1)) {
-                sb.deleteCharAt(lastCommaIndex);
-            }
         }
     }
 }

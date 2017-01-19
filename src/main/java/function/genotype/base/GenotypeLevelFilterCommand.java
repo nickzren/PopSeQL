@@ -9,11 +9,10 @@ import org.apache.spark.sql.Row;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
 import static org.apache.spark.sql.functions.when;
-import static utils.CommandManager.checkRangeValid;
 import static utils.CommandManager.checkValueValid;
 import static utils.CommandManager.getValidDouble;
+import static utils.CommandManager.getValidFloat;
 import static utils.CommandManager.getValidInteger;
-import static utils.CommandManager.getValidRange;
 import utils.CommandOption;
 import utils.PopSpark;
 
@@ -35,16 +34,14 @@ public class GenotypeLevelFilterCommand {
     public static int minCtrlCoverageCall = Data.NO_FILTER;
     public static int minCtrlCoverageNoCall = Data.NO_FILTER;
     public static String[] varStatus; // null: no filer or all    
-    public static double[] hetPercentAltRead = null; // {min, max}
-    public static double[] homPercentAltRead = null;
-    public static double genotypeQualGQ = Data.NO_FILTER;
-    public static double strandBiasFS = Data.NO_FILTER;
-    public static double haplotypeScore = Data.NO_FILTER;
-    public static double rmsMapQualMQ = Data.NO_FILTER;
-    public static double qualByDepthQD = Data.NO_FILTER;
-    public static double qual = Data.NO_FILTER;
-    public static double readPosRankSum = Data.NO_FILTER;
-    public static double mapQualRankSum = Data.NO_FILTER;
+    public static float genotypeQualGQ = Data.NO_FILTER;
+    public static float strandBiasFS = Data.NO_FILTER;
+    public static float haplotypeScore = Data.NO_FILTER;
+    public static float rmsMapQualMQ = Data.NO_FILTER;
+    public static float qualByDepthQD = Data.NO_FILTER;
+    public static float qual = Data.NO_FILTER;
+    public static float readPosRankSum = Data.NO_FILTER;
+    public static float mapQualRankSum = Data.NO_FILTER;
     public static boolean isQcMissingIncluded = false;
     public static int maxQcFailSample = Data.NO_FILTER;
     public static String calledVariantDataPath = ""; // input data format required parquet format
@@ -85,45 +82,37 @@ public class GenotypeLevelFilterCommand {
                         varStatus = str.split(",");
                     }
                     break;
-                case "--het-percent-alt-read":
-                    checkRangeValid("0-1", option);
-                    hetPercentAltRead = getValidRange(option);
-                    break;
-                case "--hom-percent-alt-read":
-                    checkRangeValid("0-1", option);
-                    homPercentAltRead = getValidRange(option);
-                    break;
                 case "--gq":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    genotypeQualGQ = getValidDouble(option);
+                    genotypeQualGQ = getValidFloat(option);
                     break;
                 case "--fs":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    strandBiasFS = getValidDouble(option);
+                    strandBiasFS = getValidFloat(option);
                     break;
                 case "--hap-score":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    haplotypeScore = getValidDouble(option);
+                    haplotypeScore = getValidFloat(option);
                     break;
                 case "--mq":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    rmsMapQualMQ = getValidDouble(option);
+                    rmsMapQualMQ = getValidFloat(option);
                     break;
                 case "--qd":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    qualByDepthQD = getValidDouble(option);
+                    qualByDepthQD = getValidFloat(option);
                     break;
                 case "--qual":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    qual = getValidDouble(option);
+                    qual = getValidFloat(option);
                     break;
                 case "--rprs":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    readPosRankSum = getValidDouble(option);
+                    readPosRankSum = getValidFloat(option);
                     break;
                 case "--mqrs":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    mapQualRankSum = getValidDouble(option);
+                    mapQualRankSum = getValidFloat(option);
                     break;
                 case "--include-qc-missing":
                     isQcMissingIncluded = true;
@@ -233,7 +222,7 @@ public class GenotypeLevelFilterCommand {
             }
             return carrierDF.withColumn("samtools_raw_coverage",
                     when(whereCondition, col("samtools_raw_coverage"))
-                    .otherwise(lit((short) Data.NA)));
+                    .otherwise(lit((short) Data.SHORT_NA)));
         }
 
         return carrierDF;

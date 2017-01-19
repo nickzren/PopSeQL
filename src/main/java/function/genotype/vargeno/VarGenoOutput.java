@@ -4,7 +4,6 @@ import function.genotype.base.CalledVariant;
 import function.variant.base.Output;
 import global.Index;
 import function.genotype.base.Carrier;
-import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.NonCarrier;
 import global.Data;
 import java.util.LinkedList;
@@ -84,9 +83,6 @@ public class VarGenoOutput extends Output {
 
         Carrier carrier = noncarrier instanceof Carrier ? ((Carrier) noncarrier) : null;
 
-        int readsAlt = carrier != null ? carrier.getReadsAlt() : Data.NA;
-        int readsRef = carrier != null ? carrier.getReadsRef() : Data.NA;
-
         return RowFactory.create(
                 calledVar.getVariantIdStr(),
                 calledVar.getType(),
@@ -99,32 +95,32 @@ public class VarGenoOutput extends Output {
                 majorHomCount[Index.CASE],
                 genoCount[Index.HET][Index.CASE],
                 minorHomCount[Index.CASE],
-                FormatManager.getDouble(minorHomFreq[Index.CASE]),
-                FormatManager.getDouble(hetFreq[Index.CASE]),
+                FormatManager.getFloat(minorHomFreq[Index.CASE]),
+                FormatManager.getFloat(hetFreq[Index.CASE]),
                 majorHomCount[Index.CTRL],
                 genoCount[Index.HET][Index.CTRL],
                 minorHomCount[Index.CTRL],
-                FormatManager.getDouble(minorHomFreq[Index.CTRL]),
-                FormatManager.getDouble(hetFreq[Index.CTRL]),
-                FormatManager.getDoubleObject(minorAlleleFreq[Index.CASE]), // keep double
-                FormatManager.getDoubleObject(minorAlleleFreq[Index.CTRL]), //keep double
+                FormatManager.getFloat(minorHomFreq[Index.CTRL]),
+                FormatManager.getFloat(hetFreq[Index.CTRL]),
+                FormatManager.getFloat(minorAlleleFreq[Index.CASE]),
+                FormatManager.getFloat(minorAlleleFreq[Index.CTRL]),
                 FormatManager.getDouble(hweP[Index.CASE]),
                 FormatManager.getDouble(hweP[Index.CTRL]),
-                FormatManager.getDouble(noncarrier.getCoverage()),
-                FormatManager.getDouble(carrier != null ? carrier.getGatkFilteredCoverage() : Data.NA),
-                FormatManager.getIntegerObject(readsAlt),
-                FormatManager.getIntegerObject(readsRef),
-                FormatManager.getPercAltRead(readsAlt, carrier != null ? carrier.getGatkFilteredCoverage() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getVqslod() : Data.NA),
-                carrier != null ? carrier.getPassFailStatus() : "NA",
-                FormatManager.getDouble(carrier != null ? carrier.getGenotypeQualGQ() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getStrandBiasFS() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getHaplotypeScore() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getRmsMapQualMQ() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getQualByDepthQD() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getQual() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getReadPosRankSum() : Data.NA),
-                FormatManager.getDouble(carrier != null ? carrier.getMapQualRankSum() : Data.NA)
+                FormatManager.getInteger(noncarrier.getCoverage()),
+                FormatManager.getInteger(carrier != null ? carrier.getGatkFilteredCoverage() : Data.INTEGER_NA),
+                FormatManager.getShort(carrier != null ? carrier.getReadsAlt() : Data.SHORT_NA),
+                FormatManager.getShort(carrier != null ? carrier.getReadsAlt() : Data.SHORT_NA),
+                carrier != null ? carrier.getPercAltRead() : Data.STRING_NA,
+                FormatManager.getFloat(carrier != null ? carrier.getVqslod() : Data.FLOAT_NA),
+                carrier != null ? carrier.getPassFailStatus() : Data.STRING_NA,
+                FormatManager.getFloat(carrier != null ? carrier.getGenotypeQualGQ() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getStrandBiasFS() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getHaplotypeScore() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getRmsMapQualMQ() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getQualByDepthQD() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getQual() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getReadPosRankSum() : Data.FLOAT_NA),
+                FormatManager.getFloat(carrier != null ? carrier.getMapQualRankSum() : Data.FLOAT_NA)
         );
     }
 
@@ -148,14 +144,14 @@ public class VarGenoOutput extends Output {
             DataTypes.createStructField("Minor Hom Ctrl", DataTypes.IntegerType, true),//i
             DataTypes.createStructField("Minor Hom Ctrl Freq", DataTypes.StringType, true),//d
             DataTypes.createStructField("Het Ctrl Freq", DataTypes.StringType, true),//d
-            DataTypes.createStructField("Case Maf", DataTypes.DoubleType, true),//d
-            DataTypes.createStructField("Ctrl Maf", DataTypes.DoubleType, true),//d
+            DataTypes.createStructField("Case Maf", DataTypes.StringType, true),//d
+            DataTypes.createStructField("Ctrl Maf", DataTypes.StringType, true),//d
             DataTypes.createStructField("Case HWE_P", DataTypes.StringType, true),//d
             DataTypes.createStructField("Ctrl HWE_P", DataTypes.StringType, true),//d
             DataTypes.createStructField("Samtools Raw Coverage", DataTypes.StringType, true),//s
             DataTypes.createStructField("Gatk Filtered Coverage", DataTypes.StringType, true),//s
-            DataTypes.createStructField("Reads Alt", DataTypes.IntegerType, true),//s
-            DataTypes.createStructField("Reads Ref", DataTypes.IntegerType, true),//s
+            DataTypes.createStructField("Reads Alt", DataTypes.StringType, true),//s
+            DataTypes.createStructField("Reads Ref", DataTypes.StringType, true),//s
             DataTypes.createStructField("Percent Alt Read", DataTypes.StringType, true),//d
             DataTypes.createStructField("Vqslod", DataTypes.StringType, true),//d
             DataTypes.createStructField("Pass Fail Status", DataTypes.StringType, true),
