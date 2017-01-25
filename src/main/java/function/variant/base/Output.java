@@ -11,7 +11,7 @@ import utils.MathManager;
  *
  * @author nick
  */
-public class Output /* implements Cloneable */ {
+public class Output {
 
     protected CalledVariant calledVar;
 

@@ -1,6 +1,6 @@
 
 import function.genotype.base.SampleManager;
-import utils.PopSpark;
+import utils.SparkManager;
 import utils.CommandManager;
 import function.genotype.vargeno.ListVarGeno;
 import function.genotype.vargeno.VarGenoCommand;
@@ -12,7 +12,7 @@ import function.genotype.vargeno.VarGenoCommand;
 public class Program {
 
     public static void main(String[] args) {
-        PopSpark.init();
+        SparkManager.start();
 
         CommandManager.initOptions(args);
 
@@ -22,6 +22,6 @@ public class Program {
             ListVarGeno.run();
         }
 
-        PopSpark.destroy();
+        SparkManager.stop();
     }
 }

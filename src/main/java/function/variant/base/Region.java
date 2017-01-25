@@ -7,7 +7,7 @@ import utils.FormatManager;
  *
  * @author nick
  */
-public class Region implements Comparable {
+public class Region {
 
     protected String chrStr;
     protected int chrNum;
@@ -34,8 +34,7 @@ public class Region implements Comparable {
     }
 
     private int intChr() {
-        if (chrStr.equals("X")
-                || chrStr.equals("XY")) {
+        if (chrStr.equals("X")) {
             return 23;
         } else if (chrStr.equals("Y")) {
             return 24;
@@ -78,23 +77,5 @@ public class Region implements Comparable {
 
     public int getLength() {
         return length;
-    }
-
-    @Override
-    public String toString() {
-        String chr = "chr" + chrStr;
-        if (startPosition == Data.INTEGER_NA && endPosition == Data.INTEGER_NA) {
-            return chr;
-        }
-
-        chr += ":" + startPosition + "-" + endPosition;
-
-        return chr;
-    }
-
-    @Override
-    public int compareTo(Object another) throws ClassCastException {
-        Region that = (Region) another;
-        return Double.compare(this.chrNum, that.chrNum); //small -> large
     }
 }

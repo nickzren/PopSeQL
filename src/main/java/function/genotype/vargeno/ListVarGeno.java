@@ -5,7 +5,7 @@ import function.genotype.base.Carrier;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.NonCarrier;
 import function.genotype.base.SampleManager;
-import utils.PopSpark;
+import utils.SparkManager;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -123,7 +123,7 @@ public class ListVarGeno {
 
         // Write output
         outputDF
-                .coalesce(PopSpark.session.sparkContext().defaultParallelism())
+                .coalesce(SparkManager.session.sparkContext().defaultParallelism())
                 .write()
                 //.mode(i == 0 ? "overwrite" : "append")
                 .mode("overwrite")

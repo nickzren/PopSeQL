@@ -9,12 +9,12 @@ import org.apache.spark.sql.Row;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
 import static org.apache.spark.sql.functions.when;
-import static utils.CommandManager.checkValueValid;
 import static utils.CommandManager.getValidDouble;
 import static utils.CommandManager.getValidFloat;
 import static utils.CommandManager.getValidInteger;
 import utils.CommandOption;
-import utils.PopSpark;
+import utils.SparkManager;
+import static utils.CommandManager.checkValueValid;
 
 /**
  *
@@ -130,11 +130,11 @@ public class GenotypeLevelFilterCommand {
     }
 
     public static Dataset<Row> getCalledVariantDF() {
-        return PopSpark.session.read().parquet(calledVariantDataPath);
+        return SparkManager.session.read().parquet(calledVariantDataPath);
     }
 
     public static Dataset<Row> getReadCoverageDF() {
-        return PopSpark.session.read().parquet(readCoverageDataPath);
+        return SparkManager.session.read().parquet(readCoverageDataPath);
     }
 
     public static Dataset<Row> applyCarrierFilters(Dataset<Row> carrierDF) {

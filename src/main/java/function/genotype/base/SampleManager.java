@@ -1,7 +1,7 @@
 package function.genotype.base;
 
 import global.Index;
-import utils.PopSpark;
+import utils.SparkManager;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -64,11 +64,11 @@ public class SampleManager {
             ErrorManager.send(e);
         }
 
-        if(PopSpark.context == null){
+        if(SparkManager.context == null){
             System.out.println("PopSpark.context is null");
         }
         
-        sampleMapBroadcast = PopSpark.context.broadcast(sampleMap);
+        sampleMapBroadcast = SparkManager.context.broadcast(sampleMap);
     }
 
     public static Broadcast<HashMap<Integer, Byte>> getSampleMapBroadcast() {
