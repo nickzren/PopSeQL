@@ -1,10 +1,8 @@
 package function.variant.base;
 
 import function.genotype.base.CalledVariant;
-import function.genotype.base.GenotypeLevelFilterCommand;
 import global.Data;
 import global.Index;
-import function.genotype.statistics.HWEExact;
 import utils.MathManager;
 
 /**
@@ -23,7 +21,6 @@ public class Output {
     protected float[] hetFreq = new float[2];
     protected float[] minorAlleleFreq = new float[2];
     protected float[] minorHomFreq = new float[2];
-    protected double[] hweP = new double[2];
 
     public Output(CalledVariant c) {
         calledVar = c;
@@ -65,10 +62,6 @@ public class Output {
         return minorHomFreq;
     }
 
-    public double[] getHweP() {
-        return hweP;
-    }
-
     public void addSampleGeno(byte geno, int pheno) {
         if (geno != Data.BYTE_NA) {
             genoCount[geno][pheno]++;
@@ -79,8 +72,6 @@ public class Output {
         calculateAlleleFreq();
 
         calculateGenotypeFreq();
-
-        calculateHweP();
 
         countMajorMinorHomHet();
     }
@@ -140,16 +131,6 @@ public class Output {
         hetFreq[Index.CTRL] = MathManager.devide(genoCount[Index.HET][Index.CTRL], totalCtrlGenotypeCount);
     }
 
-    public void calculateHweP() {
-        hweP[Index.CASE] = HWEExact.getP(genoCount[Index.HOM][Index.CASE],
-                genoCount[Index.HET][Index.CASE],
-                genoCount[Index.REF][Index.CASE]);
-
-        hweP[Index.CTRL] = HWEExact.getP(genoCount[Index.HOM][Index.CTRL],
-                genoCount[Index.HET][Index.CTRL],
-                genoCount[Index.REF][Index.CTRL]);
-    }
-
     public void countMajorMinorHomHet() {
         if (isMinorRef) {
             minorHomCount[Index.CASE] = genoCount[Index.REF][Index.CASE];
@@ -179,45 +160,11 @@ public class Output {
         return "";
     }
 
-    protected int getVarPresent() {
-        if (GenotypeLevelFilterCommand.isAllNonRef && isMinorRef) {
-            return majorHomCount[Index.CASE]
-                    + genoCount[Index.HET][Index.CASE]
-                    + majorHomCount[Index.CTRL]
-                    + genoCount[Index.HET][Index.CTRL];
-        }
-
-        return minorHomCount[Index.CASE]
-                + genoCount[Index.HET][Index.CASE]
-                + minorHomCount[Index.CTRL]
-                + genoCount[Index.HET][Index.CTRL];
-    }
-
-    protected int getCaseCarrier() {
-        if (GenotypeLevelFilterCommand.isAllNonRef && isMinorRef) {
-            return majorHomCount[Index.CASE]
-                    + genoCount[Index.HET][Index.CASE];
-        }
-
-        return minorHomCount[Index.CASE]
-                + genoCount[Index.HET][Index.CASE];
-    }
-
     /*
      * if ref is minor then only het & ref are qualified samples. If ref is
      * major then only hom & het are qualified samples.
      */
     public boolean isQualifiedGeno(byte geno) {
-        if (GenotypeLevelFilterCommand.isAllGeno) {
-            return true;
-        }
-
-        if (GenotypeLevelFilterCommand.isAllNonRef) {
-            if (geno == Index.HOM || geno == Index.HET) {
-                return true;
-            }
-        }
-
         if (isMinorRef) {
             if (geno == Index.REF || geno == Index.HET) {
                 return true;

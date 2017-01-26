@@ -44,10 +44,10 @@ public class ListVarGeno {
                 (Row r) -> r.getString(0), // group by block id
                 Encoders.STRING());
 
-        // init output dataframe
+        // init output data
         Dataset<Row> outputDF = groupedCalledVarDF.cogroup(groupedCoverageDF,
                 (String k, Iterator<Row> calledVarRowIterator, Iterator<Row> covRowIterator) -> {
-                    /* Parse coverage blocks */
+                    // init covRowIterator data
                     HashMap<Integer, TreeMap<Short, Short>> sampleCovMapMap = new HashMap<>();
                     // \-> Maps each sample_id to a tree map that maps the block offset to the coverage value
                     while (covRowIterator.hasNext()) {
@@ -66,13 +66,19 @@ public class ListVarGeno {
                         sampleCovMapMap.put(sampleId, tm);
                     }
 
-                    HashMap<Integer, VarGenoOutput> varGenoOutputMap = new HashMap<>();
+                    // init calledVarRowIterator data
+                    HashMap<String, VarGenoOutput> varGenoOutputMap = new HashMap<>();
 
+                    // init carrier data
                     while (calledVarRowIterator.hasNext()) {
                         Row cvRow = calledVarRowIterator.next();
 
                         int sampleId = cvRow.getInt(1);
-                        int variantId = cvRow.getInt(2);
+                        String variantId
+                        = cvRow.getString(2)        // chr
+                        + "-" + cvRow.getInt(3)     // pos
+                        + "-" + cvRow.getString(4)  // ref
+                        + "-" + cvRow.getString(5); // alt
 
                         VarGenoOutput varGenoOutput = varGenoOutputMap.get(variantId);
 

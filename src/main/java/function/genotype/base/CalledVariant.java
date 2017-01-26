@@ -1,8 +1,6 @@
 package function.genotype.base;
 
 import function.variant.base.Output;
-import function.variant.base.Region;
-import global.Data;
 import java.util.HashMap;
 import org.apache.spark.sql.Row;
 
@@ -10,7 +8,7 @@ import org.apache.spark.sql.Row;
  *
  * @author nick
  */
-public class CalledVariant extends Region {
+public class CalledVariant {
 
     private HashMap<Integer, Carrier> carrierMap = new HashMap<>();
     private HashMap<Integer, NonCarrier> noncarrierMap = new HashMap<>();
@@ -19,6 +17,8 @@ public class CalledVariant extends Region {
     public String variantIdStr;
     public String allele;
     public String refAllele;
+    public String chrStr;
+    public int position;
     private boolean isIndel;
 
     public short blockOffset;
@@ -42,24 +42,16 @@ public class CalledVariant extends Region {
 
     public void initVariantData(Row r) {
         chrStr = r.getString(r.fieldIndex("chr"));
-        chrNum = intChr();
-
+        position = r.getInt(r.fieldIndex("pos"));
         allele = r.getString(r.fieldIndex("alt"));
         refAllele = r.getString(r.fieldIndex("ref"));
 
-        int position = r.getInt(r.fieldIndex("pos"));
-
-        variantIdStr
-                = chrStr + "-" + Integer.toString(position) + "-"
-                + refAllele + "-" + allele;
+        variantIdStr = chrStr + "-" + position + "-" + refAllele + "-" + allele;
 
         isIndel = allele.length() != refAllele.length();
 
         // Magic trick to get block offset
         blockOffset = (short) ((position - 1) & 0x3FF);
-
-        initRegion(chrStr, position, position);
-
     }
 
     public HashMap<Integer, Carrier> getCarrierMap() {
@@ -68,23 +60,6 @@ public class CalledVariant extends Region {
 
     public HashMap<Integer, NonCarrier> getNonCarrierMap() {
         return noncarrierMap;
-    }
-
-    private int intChr() {
-        if (chrStr.equals("X")
-                || chrStr.equals("XY")) {
-            return 23;
-        } else if (chrStr.equals("Y")) {
-            return 24;
-        } else if (chrStr.equals("MT")) {
-            return 26;
-        } else {
-            try {
-                return Integer.parseInt(chrStr);
-            } catch (NumberFormatException e) {
-                return Data.INTEGER_NA;
-            }
-        }
     }
 
     public String getVariantIdStr() {
