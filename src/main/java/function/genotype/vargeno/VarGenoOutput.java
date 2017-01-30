@@ -1,7 +1,7 @@
 package function.genotype.vargeno;
 
 import function.genotype.base.CalledVariant;
-import function.variant.base.Output;
+import function.genotype.base.Output;
 import global.Index;
 import function.genotype.base.Carrier;
 import function.genotype.base.NonCarrier;

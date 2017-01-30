@@ -1,6 +1,5 @@
 package function.genotype.base;
 
-import function.variant.base.Output;
 import java.util.HashMap;
 import org.apache.spark.sql.Row;
 

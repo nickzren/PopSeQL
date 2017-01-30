@@ -1,6 +1,5 @@
-package function.variant.base;
+package function.genotype.base;
 
-import function.genotype.base.CalledVariant;
 import global.Data;
 import global.Index;
 import utils.MathManager;
