@@ -94,7 +94,7 @@ public class ListVarGeno {
                         varGenoOutput.getCalledVar().addCarrier(sampleId, carrier);
                         varGenoOutput.addSampleGeno(carrier.getGenotype(), pheno);
                     }
-
+                    
                     LinkedList<Row> outputRows = new LinkedList<>();
 
                     for (VarGenoOutput varGenoOutput : varGenoOutputMap.values()) {

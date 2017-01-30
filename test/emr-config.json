@@ -1,0 +1,24 @@
+[
+	{
+		"classification":"spark",
+		"properties":{
+			"maximizeResourceAllocation":"true"
+		},
+		"configurations":
+		[]
+	},{
+	    "Classification": "spark-env",
+	    "Properties": {},
+	    "Configurations": [
+	      {
+	        "Classification": "export",
+	        "Properties": {
+	          "PYSPARK_PYTHON": "python3",
+	          "SPARK_YARN_USER_ENV": "PYSPARK_PYTHON=python3"
+	        },
+	        "Configurations": []
+	      }
+	    ]
+	}
+
+]
