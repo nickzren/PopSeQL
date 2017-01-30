@@ -14,7 +14,7 @@ To run PopSeQL locally, you need to install Spark 2.0+ and Hadoop 2.7. Copy over
 $SPARK_HOME/bin/spark-submit --class Program ~/github/PopSeQL/target/PopSeQL-1.0.jar --list-var-geno --sample ~/samples.txt --called-variant file:///parquet/called_variant/*.parquet --read-coverage file:///parquet/read_coverage/*.parquet --ctrl-maf 0.01 --out ~/out
 ```
 
-## Running on EMR
+## Running on AWS EMR
 
 To start a EMR cluster, go to the EMR console, "Create cluster", "Go to advanced options".
 
