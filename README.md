@@ -11,7 +11,7 @@ PopSeQL requires the user to define the samples file using ```--sample```, which
 To run PopSeQL locally, you need to install Spark 2.0+ and Hadoop 2.7. Copy over called variant and read coverage parquet format data to your local directory as well as the sample file.
 
 ```
-$SPARK_HOME/bin/spark-submit --class Program ~/github/PopSeQL/target/PopSeQL-1.0.jar --list-var-geno --sample ~/samples.txt --called-variant file:///parquet/called_variant/*.parquet --read-coverage file:///parquet/read_coverage/*.parquet --ctrl-maf 0.01 --out ~/out
+$SPARK_HOME/bin/spark-submit --class Program ~/PopSeQL-1.0.jar --list-var-geno --sample ~/samples.txt --called-variant file:///parquet/called_variant/*.parquet --read-coverage file:///parquet/read_coverage/*.parquet --ctrl-maf 0.01 --out ~/out
 ```
 
 ## Running on AWS EMR
