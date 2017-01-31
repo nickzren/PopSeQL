@@ -1,6 +1,8 @@
 package utils;
 
+import function.genotype.base.AnnotationLevelFilterCommand;
 import function.genotype.base.GenotypeLevelFilterCommand;
+import function.genotype.collapsing.CollapsingCommand;
 import global.Data;
 import function.genotype.vargeno.VarGenoCommand;
 import java.util.ArrayList;
@@ -121,7 +123,7 @@ public class CommandManager {
         CommandOption option;
 
         while (iterator.hasNext()) {
-            option = (CommandOption) iterator.next();
+            option = iterator.next();
             if (option.getName().equals("--out")) {
                 CommonCommand.outputPath = option.getValue();
                 iterator.remove();
@@ -141,12 +143,15 @@ public class CommandManager {
         boolean hasMainFunction = false;
 
         while (iterator.hasNext()) {
-            option = (CommandOption) iterator.next();
+            option = iterator.next();
 
             switch (option.getName()) {
                 // Genotype Analysis Functions
                 case "--list-var-geno":
                     VarGenoCommand.isListVarGeno = true;
+                    break;
+                case "--collapsing-dom":
+                    CollapsingCommand.isCollapsingSingleVariant = true;
                     break;
                 default:
                     continue;
@@ -172,7 +177,8 @@ public class CommandManager {
     private static void initCommonOptions() throws Exception {
 //        VariantLevelFilterCommand.initOptions(optionList.iterator());
 
-//        AnnotationLevelFilterCommand.initOptions(optionList.iterator());
+        AnnotationLevelFilterCommand.initOptions(optionList.iterator());
+
         GenotypeLevelFilterCommand.initOptions(optionList.iterator());
     }
 
@@ -185,7 +191,7 @@ public class CommandManager {
         while (iterator.hasNext()) {
             hasInvalid = true;
 
-            option = (CommandOption) iterator.next();
+            option = iterator.next();
 
             System.err.println("Invalid option: " + option.getName());
 

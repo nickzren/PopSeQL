@@ -41,6 +41,7 @@ public class GenotypeLevelFilterCommand {
     public static float mapQualRankSum = Data.NO_FILTER;
     public static boolean isQcMissingIncluded = false;
     public static int maxQcFailSample = Data.NO_FILTER;
+    public static int minVarPresent = 1; // special case
     public static String calledVariantDataPath = ""; // input data format required parquet format
     public static String readCoverageDataPath = "";  // input data format required parquet format
 
@@ -51,7 +52,7 @@ public class GenotypeLevelFilterCommand {
         CommandOption option;
 
         while (iterator.hasNext()) {
-            option = (CommandOption) iterator.next();
+            option = iterator.next();
             switch (option.getName()) {
                 case "--sample":
                     sampleFile = option.getValue();
@@ -219,7 +220,7 @@ public class GenotypeLevelFilterCommand {
             }
             return carrierDF.withColumn("samtools_raw_coverage",
                     when(whereCondition, col("samtools_raw_coverage"))
-                    .otherwise(lit((short) Data.SHORT_NA)));
+                    .otherwise(lit(Data.SHORT_NA)));
         }
 
         return carrierDF;
@@ -248,5 +249,21 @@ public class GenotypeLevelFilterCommand {
         }
 
         return outputDF;
+    }
+
+    public static boolean isMaxCtrlMafValid(double value) {
+        if (maxCtrlMaf == Data.NO_FILTER) {
+            return true;
+        }
+
+        return value <= maxCtrlMaf;
+    }
+
+    public static boolean isMinVarPresentValid(int value) {
+        if (minVarPresent == Data.NO_FILTER) {
+            return true;
+        }
+
+        return value >= minVarPresent;
     }
 }

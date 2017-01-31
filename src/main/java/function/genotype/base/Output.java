@@ -66,7 +66,7 @@ public class Output {
             genoCount[geno][pheno]++;
         }
     }
-    
+
     public void calculate() {
         calculateAlleleFreq();
 
@@ -177,5 +177,24 @@ public class Output {
 
     public boolean isMinorRef() {
         return isMinorRef;
+    }
+
+    private int getVarPresent() {
+        if (isMinorRef) {
+            return majorHomCount[Index.CASE]
+                    + genoCount[Index.HET][Index.CASE]
+                    + majorHomCount[Index.CTRL]
+                    + genoCount[Index.HET][Index.CTRL];
+        }
+
+        return minorHomCount[Index.CASE]
+                + genoCount[Index.HET][Index.CASE]
+                + minorHomCount[Index.CTRL]
+                + genoCount[Index.HET][Index.CTRL];
+    }
+
+    public boolean isValid() {
+        return GenotypeLevelFilterCommand.isMinVarPresentValid(getVarPresent())
+                && GenotypeLevelFilterCommand.isMaxCtrlMafValid(minorAlleleFreq[Index.CTRL]);
     }
 }

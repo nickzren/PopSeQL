@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.apache.spark.broadcast.Broadcast;
 import utils.ErrorManager;
@@ -18,12 +19,14 @@ import utils.ErrorManager;
 public class SampleManager {
 
     private static Broadcast<HashMap<Integer, Byte>> sampleMapBroadcast;
+    private static Broadcast<ArrayList<Sample>> sampleListBroadcast;
 
     private static int caseNum = 0;
     private static int ctrlNum = 0;
 
     public static void init() {
         HashMap<Integer, Byte> sampleMap = new HashMap<>();
+        ArrayList<Sample> sampleList = new ArrayList<>();
 
         String lineStr = "";
 
@@ -48,6 +51,7 @@ public class SampleManager {
 
                 if (!sampleMap.containsKey(sampleId)) {
                     sampleMap.put(sampleId, pheno);
+                    sampleList.add(new Sample(sampleId, pheno));
 
                     if (pheno == Index.CTRL) {
                         ctrlNum++;
@@ -64,15 +68,20 @@ public class SampleManager {
             ErrorManager.send(e);
         }
 
-        if(SparkManager.context == null){
+        if (SparkManager.context == null) {
             System.out.println("PopSpark.context is null");
         }
-        
+
         sampleMapBroadcast = SparkManager.context.broadcast(sampleMap);
+        sampleListBroadcast = SparkManager.context.broadcast(sampleList);
     }
 
     public static Broadcast<HashMap<Integer, Byte>> getSampleMapBroadcast() {
         return sampleMapBroadcast;
+    }
+    
+    public static Broadcast<ArrayList<Sample>> getSampleListBroadcast() {
+        return sampleListBroadcast;
     }
 
     public static int getCaseNum() {
@@ -81,5 +90,9 @@ public class SampleManager {
 
     public static int getCtrlNum() {
         return ctrlNum;
+    }
+
+    public static int getSampleNum() {
+        return caseNum + ctrlNum;
     }
 }

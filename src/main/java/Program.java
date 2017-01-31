@@ -1,5 +1,8 @@
 
+import function.genotype.base.GeneManager;
 import function.genotype.base.SampleManager;
+import function.genotype.collapsing.CollapsingCommand;
+import function.genotype.collapsing.CollapsingSingleVariant;
 import utils.SparkManager;
 import utils.CommandManager;
 import function.genotype.vargeno.ListVarGeno;
@@ -18,8 +21,12 @@ public class Program {
 
         SampleManager.init();
 
+        GeneManager.init();
+
         if (VarGenoCommand.isListVarGeno) {
             ListVarGeno.run();
+        } else if (CollapsingCommand.isCollapsingSingleVariant) {
+            CollapsingSingleVariant.run();
         }
 
         SparkManager.stop();

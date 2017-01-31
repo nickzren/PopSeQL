@@ -1,12 +1,14 @@
-package function.genotype.vargeno;
+package function.genotype.collapsing;
 
 import function.genotype.base.CalledVariant;
 import function.genotype.base.Carrier;
+import function.genotype.base.Gene;
+import function.genotype.base.GeneManager;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.NonCarrier;
 import function.genotype.base.SampleManager;
-import global.Index;
-import utils.SparkManager;
+import function.genotype.vargeno.VarGenoOutput;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,14 +20,18 @@ import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import utils.CommonCommand;
+import utils.SparkManager;
 
 /**
  *
  * @author nick
  */
-public class ListVarGeno {
+public class CollapsingSingleVariant {
 
     public static void run() {
+//        ArrayList<CollapsingSummary> summaryList = new ArrayList<>();
+//        HashMap<String, CollapsingSummary> summaryMap = new HashMap<>();
+
         HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
 
         // init called_variant data
@@ -121,6 +127,17 @@ public class ListVarGeno {
                         // filter variants
                         if (varGenoOutput.isValid()) {
                             varGenoOutput.appendRowsToList(outputRows);
+
+//                            TreeMap<Integer, Gene> startPosGeneMap
+//                            = GeneManager.getGeneMapBroadcast().value().get(
+//                                    varGenoOutput.getCalledVar().chrStr);
+//
+//                            Gene gene = startPosGeneMap.floorEntry(
+//                                    varGenoOutput.getCalledVar().position).getValue();
+//
+//                            if (gene.contains(varGenoOutput.getCalledVar().position)) {
+//
+//                            }
                         }
                     }
 

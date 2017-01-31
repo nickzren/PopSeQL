@@ -72,6 +72,10 @@ public class CalledVariant {
             return "snv";
         }
     }
+    
+    public boolean isSNV(){
+        return !isIndel;
+    }
 
     public String getAllele() {
         return allele;

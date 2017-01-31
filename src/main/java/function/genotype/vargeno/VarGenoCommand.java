@@ -17,7 +17,7 @@ public class VarGenoCommand {
         CommandOption option;
 
         while (iterator.hasNext()) {
-            option = (CommandOption) iterator.next();
+            option = iterator.next();
             if (option.getName().equals("--case-only")) {
                 isCaseOnly = true;
             } else {
