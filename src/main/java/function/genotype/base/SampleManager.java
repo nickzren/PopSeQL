@@ -19,7 +19,7 @@ import utils.ErrorManager;
 public class SampleManager {
 
     private static Broadcast<HashMap<Integer, Byte>> sampleMapBroadcast;
-    private static Broadcast<ArrayList<Sample>> sampleListBroadcast;
+//    private static Broadcast<ArrayList<Sample>> sampleListBroadcast;
 
     private static int caseNum = 0;
     private static int ctrlNum = 0;
@@ -73,16 +73,16 @@ public class SampleManager {
         }
 
         sampleMapBroadcast = SparkManager.context.broadcast(sampleMap);
-        sampleListBroadcast = SparkManager.context.broadcast(sampleList);
+//        sampleListBroadcast = SparkManager.context.broadcast(sampleList);
     }
 
     public static Broadcast<HashMap<Integer, Byte>> getSampleMapBroadcast() {
         return sampleMapBroadcast;
     }
     
-    public static Broadcast<ArrayList<Sample>> getSampleListBroadcast() {
-        return sampleListBroadcast;
-    }
+//    public static Broadcast<ArrayList<Sample>> getSampleListBroadcast() {
+//        return sampleListBroadcast;
+//    }
 
     public static int getCaseNum() {
         return caseNum;

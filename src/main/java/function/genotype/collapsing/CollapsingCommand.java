@@ -14,6 +14,7 @@ public class CollapsingCommand {
 
     public static boolean isCollapsingSingleVariant = false;
     public static double maxLooMaf = Data.NO_FILTER;
+    public static boolean isRecessive = false;
 
     public static void initSingleVarOptions(Iterator<CommandOption> iterator)
             throws Exception { // collapsing dom or rec

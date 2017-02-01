@@ -61,6 +61,10 @@ public class CalledVariant {
         return noncarrierMap;
     }
 
+//    public byte getGT() {
+//        
+//    }
+
     public String getVariantIdStr() {
         return variantIdStr;
     }
@@ -72,8 +76,8 @@ public class CalledVariant {
             return "snv";
         }
     }
-    
-    public boolean isSNV(){
+
+    public boolean isSNV() {
         return !isIndel;
     }
 

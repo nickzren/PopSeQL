@@ -67,6 +67,12 @@ public class Output {
         }
     }
 
+    public void deleteSampleGeno(int geno, int pheno) {
+        if (geno != Data.BYTE_NA) {
+            genoCount[geno][pheno]--;
+        }
+    }
+
     public void calculate() {
         calculateAlleleFreq();
 

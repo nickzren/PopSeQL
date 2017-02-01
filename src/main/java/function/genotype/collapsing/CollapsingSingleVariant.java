@@ -7,13 +7,20 @@ import function.genotype.base.GeneManager;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.NonCarrier;
 import function.genotype.base.SampleManager;
-import function.genotype.vargeno.VarGenoOutput;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.KeyValueGroupedDataset;
@@ -29,9 +36,12 @@ import utils.SparkManager;
 public class CollapsingSingleVariant {
 
     public static void run() {
-//        ArrayList<CollapsingSummary> summaryList = new ArrayList<>();
-//        HashMap<String, CollapsingSummary> summaryMap = new HashMap<>();
+        HashMap<String, TreeMap<Integer, Gene>> geneMap = GeneManager.getGeneMapBroadcast().value();
 
+        ArrayList<CollapsingGeneSummary> summaryList = new ArrayList<>();
+        HashMap<String, CollapsingGeneSummary> summaryMap = new HashMap<>();
+
+        // var geno data
         HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
 
         // init called_variant data
@@ -74,7 +84,7 @@ public class CollapsingSingleVariant {
                     }
 
                     // init calledVarRowIterator data
-                    HashMap<String, VarGenoOutput> varGenoOutputMap = new HashMap<>();
+                    HashMap<String, CollapsingOutput> varGenoOutputMap = new HashMap<>();
 
                     // init carrier data
                     while (calledVarRowIterator.hasNext()) {
@@ -87,12 +97,12 @@ public class CollapsingSingleVariant {
                         + "-" + cvRow.getString(4) // ref
                         + "-" + cvRow.getString(5); // alt
 
-                        VarGenoOutput varGenoOutput = varGenoOutputMap.get(variantId);
+                        CollapsingOutput varGenoOutput = varGenoOutputMap.get(variantId);
 
                         if (varGenoOutput == null) {
                             CalledVariant calledVariant = new CalledVariant();
                             calledVariant.initVariantData(cvRow);
-                            varGenoOutput = new VarGenoOutput(calledVariant);
+                            varGenoOutput = new CollapsingOutput(calledVariant);
                             varGenoOutputMap.put(variantId, varGenoOutput);
                         }
 
@@ -104,46 +114,57 @@ public class CollapsingSingleVariant {
 
                     LinkedList<Row> outputRows = new LinkedList<>();
 
-                    for (VarGenoOutput varGenoOutput : varGenoOutputMap.values()) {
+                    for (CollapsingOutput output : varGenoOutputMap.values()) {
                         // init non-carrier data
                         for (Map.Entry<Integer, Byte> samplePhenoEntry : samplePhenoMap.entrySet()) {
                             int sampleId = samplePhenoEntry.getKey();
                             byte pheno = samplePhenoEntry.getValue();
 
-                            if (!varGenoOutput.getCalledVar().getCarrierMap().containsKey(sampleId)) { // it is non-carrier sample then
+                            if (!output.getCalledVar().getCarrierMap().containsKey(sampleId)) { // it is non-carrier sample then
                                 TreeMap<Short, Short> posCovTreeMap = sampleCovMapMap.get(sampleId);
 
                                 if (posCovTreeMap != null) {
-                                    short coverage = posCovTreeMap.floorEntry(varGenoOutput.getCalledVar().blockOffset).getValue();
+                                    short coverage = posCovTreeMap.floorEntry(output.getCalledVar().blockOffset).getValue();
                                     NonCarrier noncarrier = new NonCarrier(sampleId, coverage, pheno);
-                                    varGenoOutput.getCalledVar().addNonCarrier(sampleId, noncarrier);
-                                    varGenoOutput.addSampleGeno(noncarrier.getGenotype(), pheno);
+                                    output.getCalledVar().addNonCarrier(sampleId, noncarrier);
+                                    output.addSampleGeno(noncarrier.getGenotype(), pheno);
                                 }
                             }
                         }
 
-                        varGenoOutput.calculate();
+                        output.calculate();
 
                         // filter variants
-                        if (varGenoOutput.isValid()) {
-                            varGenoOutput.appendRowsToList(outputRows);
+                        if (output.isValid()) {
+                            Entry<Integer, Gene> entry
+                            = geneMap
+                            .get(output.getCalledVar().chrStr)
+                            .floorEntry(output.getCalledVar().position);
 
-//                            TreeMap<Integer, Gene> startPosGeneMap
-//                            = GeneManager.getGeneMapBroadcast().value().get(
-//                                    varGenoOutput.getCalledVar().chrStr);
-//
-//                            Gene gene = startPosGeneMap.floorEntry(
-//                                    varGenoOutput.getCalledVar().position).getValue();
-//
-//                            if (gene.contains(varGenoOutput.getCalledVar().position)) {
-//
-//                            }
+                            if (entry != null) {
+                                Gene gene = entry.getValue();
+
+                                if (gene.contains(output.getCalledVar().position)) {
+                                    CollapsingGeneSummary summary = summaryMap.get(gene.getName());
+
+                                    if (summary == null) {
+                                        summary = new CollapsingGeneSummary(gene.getName());
+
+                                        summaryMap.put(gene.getName(), summary);
+                                    }
+
+                                    summary.updateVariantCount(output);
+
+                                    // prepare genotypes.csv output data
+                                    output.appendRowsToList(outputRows, summary);
+                                }
+                            }
                         }
                     }
 
                     return outputRows.iterator();
                 },
-                RowEncoder.apply(VarGenoOutput.getSchema()));
+                RowEncoder.apply(CollapsingOutput.getSchema()));
 
         // Write output
         outputDF
@@ -154,5 +175,66 @@ public class CollapsingSingleVariant {
                 .option("header", "true")
                 .option("nullValue", "NA")
                 .csv(CommonCommand.outputPath);
+
+        
+        // collapsing summary & matrix
+        summaryList.addAll(summaryMap.values());
+
+        outputMatrix(summaryList, samplePhenoMap);
+
+        Collections.sort(summaryList);
+
+        System.out.println("Gene size: " + summaryMap.size());
+
+        try {
+            BufferedWriter bwSummary = new BufferedWriter(new FileWriter(
+                    CommonCommand.outputPath + File.separator + "summary.csv"));
+
+            bwSummary.write(CollapsingGeneSummary.getTitle());
+
+            int rank = 1;
+            for (CollapsingGeneSummary summary : summaryList) {
+                bwSummary.write(rank++ + ",");
+                bwSummary.write(summary.toString());
+                bwSummary.newLine();
+            }
+
+            bwSummary.flush();
+            bwSummary.close();
+        } catch (IOException ex) {
+            Logger.getLogger(CollapsingSingleVariant.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void outputMatrix(ArrayList<CollapsingGeneSummary> summaryList,
+            HashMap<Integer, Byte> samplePhenoMap) {
+        try {
+            BufferedWriter bwSampleMatrix = new BufferedWriter(new FileWriter(
+                    CommonCommand.outputPath + File.separator + "matrix.txt"));
+
+            bwSampleMatrix.write("sample/gene" + "\t");
+
+            for (Map.Entry<Integer, Byte> entry : samplePhenoMap.entrySet()) {
+                bwSampleMatrix.write(entry.getKey() + "\t");
+            }
+
+            for (CollapsingSummary summary : summaryList) {
+                bwSampleMatrix.write(summary.name + "\t");
+
+                for (Map.Entry<Integer, Byte> entry : samplePhenoMap.entrySet()) {
+                    bwSampleMatrix.write(summary.sampleVariantCountMap.get(entry.getKey()) + "\t");
+                }
+                bwSampleMatrix.newLine();
+
+                summary.countSample(samplePhenoMap);
+
+                summary.calculateFetP();
+            }
+
+            bwSampleMatrix.flush();
+            bwSampleMatrix.close();
+        } catch (Exception ex) {
+            Logger.getLogger(CollapsingSingleVariant.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

@@ -40,7 +40,7 @@ public class GeneManager {
                     int end = Integer.valueOf(tmp[2]);
                     String geneName = tmp[3];
 
-                    TreeMap<Integer, Gene> startPosGeneMap = geneMap.get(tmp[0]);
+                    TreeMap<Integer, Gene> startPosGeneMap = geneMap.get(chr);
 
                     if (startPosGeneMap == null) {
                         startPosGeneMap = new TreeMap<>();

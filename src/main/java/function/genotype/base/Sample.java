@@ -16,6 +16,14 @@ public class Sample {
         this.pheno = pheno;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public byte getPheno() {
+        return pheno;
+    }
+
     public boolean isCase() {
         return pheno == Index.CASE;
     }

@@ -5,7 +5,6 @@ import function.genotype.base.Carrier;
 import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.base.NonCarrier;
 import function.genotype.base.SampleManager;
-import global.Index;
 import utils.SparkManager;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -81,19 +80,19 @@ public class ListVarGeno {
                         + "-" + cvRow.getString(4) // ref
                         + "-" + cvRow.getString(5); // alt
 
-                        VarGenoOutput varGenoOutput = varGenoOutputMap.get(variantId);
+                        VarGenoOutput output = varGenoOutputMap.get(variantId);
 
-                        if (varGenoOutput == null) {
+                        if (output == null) {
                             CalledVariant calledVariant = new CalledVariant();
                             calledVariant.initVariantData(cvRow);
-                            varGenoOutput = new VarGenoOutput(calledVariant);
-                            varGenoOutputMap.put(variantId, varGenoOutput);
+                            output = new VarGenoOutput(calledVariant);
+                            varGenoOutputMap.put(variantId, output);
                         }
 
                         byte pheno = samplePhenoMap.get(sampleId);
                         Carrier carrier = new Carrier(cvRow, pheno);
-                        varGenoOutput.getCalledVar().addCarrier(sampleId, carrier);
-                        varGenoOutput.addSampleGeno(carrier.getGenotype(), pheno);
+                        output.getCalledVar().addCarrier(sampleId, carrier);
+                        output.addSampleGeno(carrier.getGenotype(), pheno);
                     }
 
                     LinkedList<Row> outputRows = new LinkedList<>();

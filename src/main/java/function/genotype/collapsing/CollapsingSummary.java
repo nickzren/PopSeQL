@@ -1,9 +1,11 @@
 package function.genotype.collapsing;
 
-import function.genotype.base.Sample;
 import function.genotype.base.SampleManager;
 import function.genotype.statistics.FisherExact;
 import global.Data;
+import global.Index;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import utils.MathManager;
 
 /**
@@ -14,7 +16,7 @@ public class CollapsingSummary implements Comparable {
 
     String name; // gene name or region name
 
-    int[] variantNumBySample = new int[SampleManager.getSampleNum()];
+    HashMap<Integer, Integer> sampleVariantCountMap = new HashMap<>();
 
     int totalVariant = 0;
     int totalSnv = 0;
@@ -47,14 +49,15 @@ public class CollapsingSummary implements Comparable {
         linearP = value;
     }
 
-    public void updateSampleVariantCount4SingleVar(int index) {
-        variantNumBySample[index] = variantNumBySample[index] + 1;
-    }
+    public void updateSampleVariantCount4SingleVar(int sampleId) {
+        Integer variantCount = sampleVariantCountMap.get(sampleId);
 
-    public void updateSampleVariantCount4CompHet(int index) {
-        if (variantNumBySample[index] == 0) {
-            variantNumBySample[index] = variantNumBySample[index] + 1;
+        if (variantCount == null) {
+            variantCount = 0;
         }
+
+        variantCount++;
+        sampleVariantCountMap.put(sampleId, variantCount);
     }
 
     public void updateVariantCount(CollapsingOutput output) {
@@ -67,15 +70,14 @@ public class CollapsingSummary implements Comparable {
         }
     }
 
-    public void countSample() {
-        int s = 0;
-        for (Sample sample : SampleManager.getSampleListBroadcast().value()) {
-            if (sample.isCase()) {
-                if (variantNumBySample[s] > 0) {
+    public void countSample(HashMap<Integer, Byte> sampleMap) {
+        for (Entry<Integer, Byte> entry : sampleMap.entrySet()) {
+            if (sampleVariantCountMap.get(entry.getKey()) > 0) {
+                if (entry.getValue() == Index.CASE) {
                     qualifiedCase++;
+                } else {
+                    qualifiedCtrl++;
                 }
-            } else if (variantNumBySample[s] > 0) {
-                qualifiedCtrl++;
             }
         }
 

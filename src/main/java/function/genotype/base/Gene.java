@@ -1,10 +1,12 @@
 package function.genotype.base;
 
+import java.io.Serializable;
+
 /**
  *
  * @author nick
  */
-public class Gene {
+public class Gene implements Serializable {
 
     private String name;
     private String chr;
