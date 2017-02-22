@@ -38,9 +38,9 @@ public class CollapsingGeneSummary extends CollapsingSummary {
         StringBuilder sb = new StringBuilder();
 
         sb.append("'").append(name).append("'").append(",");
-        sb.append(totalVariant).append(",");
-        sb.append(totalSnv).append(",");
-        sb.append(totalIndel).append(",");
+        sb.append(totalVariant.value()).append(",");
+        sb.append(totalSnv.value()).append(",");
+        sb.append(totalIndel.value()).append(",");
         sb.append(qualifiedCase).append(",");
         sb.append(unqualifiedCase).append(",");
         sb.append(FormatManager.getDouble(qualifiedCaseFreq)).append(",");

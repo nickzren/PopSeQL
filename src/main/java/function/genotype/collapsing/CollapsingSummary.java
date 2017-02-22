@@ -6,7 +6,9 @@ import global.Data;
 import global.Index;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.apache.spark.Accumulator;
 import utils.MathManager;
+import utils.SparkManager;
 
 /**
  *
@@ -16,11 +18,12 @@ public class CollapsingSummary implements Comparable {
 
     String name; // gene name or region name
 
-    HashMap<Integer, Integer> sampleVariantCountMap = new HashMap<>();
+    HashMap<Integer, Accumulator<Integer>> sampleVariantCountMap = new HashMap<>();
 
-    int totalVariant = 0;
-    int totalSnv = 0;
-    int totalIndel = 0;
+    Accumulator<Integer> totalVariant = SparkManager.context.accumulator(0);
+    Accumulator<Integer> totalSnv = SparkManager.context.accumulator(0);
+    Accumulator<Integer> totalIndel = SparkManager.context.accumulator(0);
+
     // a b c d will be passed to calculated fisher p
     int qualifiedCase = 0;  // a
     int unqualifiedCase = 0; // b
@@ -39,6 +42,10 @@ public class CollapsingSummary implements Comparable {
 
     public CollapsingSummary(String name) {
         this.name = name;
+
+        for (Entry<Integer, Byte> entry : SampleManager.getSamplePhenoMap().entrySet()) {
+            sampleVariantCountMap.put(entry.getKey(), SparkManager.context.accumulator(0));
+        }
     }
 
     public void setLogisticP(double value) {
@@ -50,29 +57,22 @@ public class CollapsingSummary implements Comparable {
     }
 
     public void updateSampleVariantCount4SingleVar(int sampleId) {
-        Integer variantCount = sampleVariantCountMap.get(sampleId);
-
-        if (variantCount == null) {
-            variantCount = 0;
-        }
-
-        variantCount++;
-        sampleVariantCountMap.put(sampleId, variantCount);
+        sampleVariantCountMap.get(sampleId).add(1);
     }
 
     public void updateVariantCount(CollapsingOutput output) {
-        totalVariant++;
+        totalVariant.add(1);
 
         if (output.getCalledVar().isSNV()) {
-            totalSnv++;
+            totalSnv.add(1);
         } else {
-            totalIndel++;
+            totalIndel.add(1);
         }
     }
 
-    public void countSample(HashMap<Integer, Byte> sampleMap) {
-        for (Entry<Integer, Byte> entry : sampleMap.entrySet()) {
-            if (sampleVariantCountMap.get(entry.getKey()) > 0) {
+    public void countSample() {
+        for (Entry<Integer, Byte> entry : SampleManager.getSamplePhenoMap().entrySet()) {
+            if (sampleVariantCountMap.get(entry.getKey()).value() > 0) {
                 if (entry.getValue() == Index.CASE) {
                     qualifiedCase++;
                 } else {

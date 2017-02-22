@@ -24,9 +24,9 @@ import utils.CommonCommand;
  */
 public class ListVarGeno {
 
-    public static void run() {
-        HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSampleMapBroadcast().value();
+    static HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSamplePhenoMap();
 
+    public static void run() {
         // init called_variant data
         Dataset<Row> calledVarDF = GenotypeLevelFilterCommand.getCalledVariantDF();
 
