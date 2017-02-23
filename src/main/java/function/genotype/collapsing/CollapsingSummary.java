@@ -4,6 +4,7 @@ import function.genotype.base.SampleManager;
 import function.genotype.statistics.FisherExact;
 import global.Data;
 import global.Index;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import org.apache.spark.Accumulator;
@@ -14,15 +15,15 @@ import utils.SparkManager;
  *
  * @author nick
  */
-public class CollapsingSummary implements Comparable {
+public class CollapsingSummary implements Comparable, Serializable {
 
     String name; // gene name or region name
 
     HashMap<Integer, Accumulator<Integer>> sampleVariantCountMap = new HashMap<>();
 
-    Accumulator<Integer> totalVariant = SparkManager.context.accumulator(0);
-    Accumulator<Integer> totalSnv = SparkManager.context.accumulator(0);
-    Accumulator<Integer> totalIndel = SparkManager.context.accumulator(0);
+    Accumulator<Integer> totalVariant;
+    Accumulator<Integer> totalSnv;
+    Accumulator<Integer> totalIndel;
 
     // a b c d will be passed to calculated fisher p
     int qualifiedCase = 0;  // a
@@ -43,9 +44,13 @@ public class CollapsingSummary implements Comparable {
     public CollapsingSummary(String name) {
         this.name = name;
 
-        for (Entry<Integer, Byte> entry : SampleManager.getSamplePhenoMap().entrySet()) {
+        SampleManager.getSamplePhenoMap().entrySet().stream().forEach((entry) -> {
             sampleVariantCountMap.put(entry.getKey(), SparkManager.context.accumulator(0));
-        }
+        });
+
+        totalVariant = SparkManager.context.accumulator(0);
+        totalSnv = SparkManager.context.accumulator(0);
+        totalIndel = SparkManager.context.accumulator(0);
     }
 
     public void setLogisticP(double value) {

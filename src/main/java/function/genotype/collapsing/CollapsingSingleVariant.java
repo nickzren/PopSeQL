@@ -36,10 +36,11 @@ import utils.SparkManager;
 public class CollapsingSingleVariant {
 
     static ArrayList<CollapsingGeneSummary> summaryList = new ArrayList<>();
-    static HashMap<String, CollapsingGeneSummary> summaryMap = new HashMap<>();
 
     public static void run() {
-        HashMap<String, TreeMap<Integer, Gene>> geneMap = GeneManager.getGeneMapBroadcast().value();
+        HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSamplePhenoMap();
+        HashMap<String, TreeMap<Integer, Gene>> geneMap = GeneManager.getGeneMap();
+        HashMap<String, CollapsingGeneSummary> summaryMap = getSummaryMap();
 
         // init called_variant data
         Dataset<Row> calledVarDF = GenotypeLevelFilterCommand.getCalledVariantDF();
@@ -103,7 +104,7 @@ public class CollapsingSingleVariant {
                             varGenoOutputMap.put(variantId, varGenoOutput);
                         }
 
-                        byte pheno = SampleManager.getSamplePhenoMap().get(sampleId);
+                        byte pheno = samplePhenoMap.get(sampleId);
                         Carrier carrier = new Carrier(cvRow, pheno);
                         varGenoOutput.getCalledVar().addCarrier(sampleId, carrier);
                         varGenoOutput.addSampleGeno(carrier.getGenotype(), pheno);
@@ -113,7 +114,7 @@ public class CollapsingSingleVariant {
 
                     for (CollapsingOutput output : varGenoOutputMap.values()) {
                         // init non-carrier data
-                        for (Map.Entry<Integer, Byte> samplePhenoEntry : SampleManager.getSamplePhenoMap().entrySet()) {
+                        for (Map.Entry<Integer, Byte> samplePhenoEntry : samplePhenoMap.entrySet()) {
                             int sampleId = samplePhenoEntry.getKey();
                             byte pheno = samplePhenoEntry.getValue();
 
@@ -133,27 +134,22 @@ public class CollapsingSingleVariant {
 
                         // filter variants
                         if (output.isValid()) {
-                            Entry<Integer, Gene> entry
-                            = geneMap
-                            .get(output.getCalledVar().chrStr)
-                            .floorEntry(output.getCalledVar().position);
+                            TreeMap<Integer, Gene> geneChrMap = geneMap.get(output.getCalledVar().chrStr);
 
-                            if (entry != null) {
-                                Gene gene = entry.getValue();
+                            if (geneChrMap != null) {
+                                Entry<Integer, Gene> geneEntry = geneChrMap.floorEntry(output.getCalledVar().position);
 
-                                if (gene.contains(output.getCalledVar().position)) {
-                                    CollapsingGeneSummary summary = summaryMap.get(gene.getName());
+                                if (geneEntry != null) {
+                                    Gene gene = geneEntry.getValue();
 
-                                    if (summary == null) {
-                                        summary = new CollapsingGeneSummary(gene.getName());
+                                    if (gene.contains(output.getCalledVar().position)) {
+                                        CollapsingGeneSummary summary = summaryMap.get(gene.getName());
 
-                                        summaryMap.put(gene.getName(), summary);
+                                        summary.updateVariantCount(output);
+
+                                        // prepare genotypes.csv output data
+                                        output.appendRowsToList(outputRows, summary);
                                     }
-
-                                    summary.updateVariantCount(output);
-
-                                    // prepare genotypes.csv output data
-                                    output.appendRowsToList(outputRows, summary);
                                 }
                             }
                         }
@@ -180,15 +176,12 @@ public class CollapsingSingleVariant {
 
         Collections.sort(summaryList);
 
-        System.out.println("geneMap size: " + geneMap.size());
-
-        System.out.println("Gene size: " + summaryMap.size());
-
         try {
             BufferedWriter bwSummary = new BufferedWriter(new FileWriter(
                     CommonCommand.outputPath + File.separator + "summary.csv"));
 
             bwSummary.write(CollapsingGeneSummary.getTitle());
+            bwSummary.newLine();
 
             int rank = 1;
             for (CollapsingGeneSummary summary : summaryList) {
@@ -202,6 +195,22 @@ public class CollapsingSingleVariant {
         } catch (IOException ex) {
             Logger.getLogger(CollapsingSingleVariant.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    // init gene sammary map by input gene file
+    private static HashMap<String, CollapsingGeneSummary> getSummaryMap() {
+
+        HashMap<String, CollapsingGeneSummary> summaryMap = new HashMap<>();
+
+        GeneManager.getGeneMap().entrySet().stream().forEach((entryChr) -> {
+            entryChr.getValue().entrySet().stream().map((entryGene) -> entryGene.getValue()).forEach((gene) -> {
+                CollapsingGeneSummary summary = new CollapsingGeneSummary(gene.getName());
+
+                summaryMap.put(gene.getName(), summary);
+            });
+        });
+
+        return summaryMap;
     }
 
     public static void outputMatrix() {

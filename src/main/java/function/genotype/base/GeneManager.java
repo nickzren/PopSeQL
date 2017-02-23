@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.TreeMap;
-import org.apache.spark.broadcast.Broadcast;
 import utils.ErrorManager;
-import utils.SparkManager;
 
 /**
  *
@@ -15,14 +13,12 @@ import utils.SparkManager;
  */
 public class GeneManager {
 
-    private static Broadcast<HashMap<String, TreeMap<Integer, Gene>>> geneMapBroadcast;
+    private static HashMap<String, TreeMap<Integer, Gene>> geneMap = new HashMap<>();
 
     public static void init() {
         if (AnnotationLevelFilterCommand.geneInput.isEmpty()) {
             return;
         }
-
-        HashMap<String, TreeMap<Integer, Gene>> geneMap = new HashMap<>();
 
         try {
             File file = new File(AnnotationLevelFilterCommand.geneInput);
@@ -55,11 +51,9 @@ public class GeneManager {
         } catch (Exception ex) {
             ErrorManager.send(ex);
         }
-
-        geneMapBroadcast = SparkManager.context.broadcast(geneMap);
     }
 
-    public static Broadcast<HashMap<String, TreeMap<Integer, Gene>>> getGeneMapBroadcast() {
-        return geneMapBroadcast;
+    public static HashMap<String, TreeMap<Integer, Gene>> getGeneMap() {
+        return geneMap;
     }
 }

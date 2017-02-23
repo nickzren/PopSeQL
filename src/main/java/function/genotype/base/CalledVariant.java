@@ -30,15 +30,6 @@ public class CalledVariant {
         noncarrierMap.put(sampleId, noncarrier);
     }
 
-    public void addSampleDataToOutput(Output output) {
-        for (Carrier c : carrierMap.values()) {
-            output.addSampleGeno(c.getGenotype(), c.getSamplePheno());
-        }
-        for (NonCarrier nc : noncarrierMap.values()) {
-            output.addSampleGeno(nc.getGenotype(), nc.getSamplePheno());
-        }
-    }
-
     public void initVariantData(Row r) {
         chrStr = r.getString(r.fieldIndex("chr"));
         position = r.getInt(r.fieldIndex("pos"));
