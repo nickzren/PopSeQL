@@ -5,6 +5,7 @@ import function.genotype.base.GenotypeLevelFilterCommand;
 import function.genotype.collapsing.CollapsingCommand;
 import global.Data;
 import function.genotype.vargeno.VarGenoCommand;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -124,15 +125,26 @@ public class CommandManager {
 
         while (iterator.hasNext()) {
             option = iterator.next();
-            if (option.getName().equals("--out")) {
-                CommonCommand.outputPath = option.getValue();
+            if (option.getName().equals("--hdfs-out")) {
+                CommonCommand.hadoopOutputPath = option.getValue();
                 iterator.remove();
-                break;
+            } else if (option.getName().equals("--local-out")) {
+                CommonCommand.localOutputPath = option.getValue();
+                File dir = new File(CommonCommand.localOutputPath);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                iterator.remove();
             }
         }
 
-        if (CommonCommand.outputPath.isEmpty()) {
-            System.out.println("\nPlease specify output path: --out $PATH \n\nExit...\n");
+        if (CommonCommand.hadoopOutputPath.isEmpty()) {
+            System.out.println("\nPlease specify output path: --hdfs-out $PATH \n\nExit...\n");
+            System.exit(0);
+        }
+
+        if (CommonCommand.localOutputPath.isEmpty()) {
+            System.out.println("\nPlease specify output path: --local-out $PATH \n\nExit...\n");
             System.exit(0);
         }
     }

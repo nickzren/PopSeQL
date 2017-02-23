@@ -167,7 +167,7 @@ public class CollapsingSingleVariant {
                 .mode("overwrite")
                 .option("header", "true")
                 .option("nullValue", "NA")
-                .csv(CommonCommand.outputPath);
+                .csv(CommonCommand.hadoopOutputPath);
 
         // collapsing summary & matrix
         summaryList.addAll(summaryMap.values());
@@ -178,7 +178,7 @@ public class CollapsingSingleVariant {
 
         try {
             BufferedWriter bwSummary = new BufferedWriter(new FileWriter(
-                    CommonCommand.outputPath + File.separator + "summary.csv"));
+                    CommonCommand.localOutputPath + File.separator + "summary.csv"));
 
             bwSummary.write(CollapsingGeneSummary.getTitle());
             bwSummary.newLine();
@@ -216,7 +216,7 @@ public class CollapsingSingleVariant {
     public static void outputMatrix() {
         try {
             BufferedWriter bwSampleMatrix = new BufferedWriter(new FileWriter(
-                    CommonCommand.outputPath + File.separator + "matrix.txt"));
+                    CommonCommand.localOutputPath + File.separator + "matrix.txt"));
 
             bwSampleMatrix.write("sample/gene" + "\t");
 

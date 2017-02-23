@@ -135,6 +135,6 @@ public class ListVarGeno {
                 .mode("overwrite")
                 .option("header", "true")
                 .option("nullValue", "NA")
-                .csv(CommonCommand.outputPath);
+                .csv(CommonCommand.hadoopOutputPath);
     }
 }
