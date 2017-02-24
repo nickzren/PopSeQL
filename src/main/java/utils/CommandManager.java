@@ -126,7 +126,7 @@ public class CommandManager {
         while (iterator.hasNext()) {
             option = iterator.next();
             if (option.getName().equals("--hdfs-out")) {
-                CommonCommand.hadoopOutputPath = option.getValue();
+                CommonCommand.hdfsOutputPath = option.getValue();
                 iterator.remove();
             } else if (option.getName().equals("--local-out")) {
                 CommonCommand.localOutputPath = option.getValue();
@@ -138,7 +138,7 @@ public class CommandManager {
             }
         }
 
-        if (CommonCommand.hadoopOutputPath.isEmpty()) {
+        if (CommonCommand.hdfsOutputPath.isEmpty()) {
             System.out.println("\nPlease specify output path: --hdfs-out $PATH \n\nExit...\n");
             System.exit(0);
         }

@@ -167,7 +167,7 @@ public class CollapsingSingleVariant {
                 .mode("overwrite")
                 .option("header", "true")
                 .option("nullValue", "NA")
-                .csv(CommonCommand.hadoopOutputPath);
+                .csv(CommonCommand.hdfsOutputPath);
 
         // collapsing summary & matrix
         summaryList.addAll(summaryMap.values());
