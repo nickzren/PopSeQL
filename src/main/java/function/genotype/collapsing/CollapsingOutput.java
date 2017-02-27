@@ -4,7 +4,6 @@ import function.genotype.base.CalledVariant;
 import function.genotype.base.Carrier;
 import function.genotype.base.NonCarrier;
 import function.genotype.base.Output;
-import function.genotype.base.Sample;
 //import function.genotype.base.Sample;
 import global.Data;
 import global.Index;
@@ -15,7 +14,6 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import utils.FormatManager;
-import utils.MathManager;
 
 /**
  *
@@ -44,46 +42,6 @@ public class CollapsingOutput extends Output {
             }
         }
     }
-    
-    public void calculateLooFreq(Sample sample) {
-        if (sample.getId() != Data.INTEGER_NA) {
-//            byte geno = calledVar.getGT(sample.getId());
-//            int pheno = sample.getPheno();
-//
-//            deleteSampleGeno(geno, pheno);
-//
-//            calculateLooMaf();
-//
-//            addSampleGeno(geno, pheno);
-        }
-    }
-
-    private void calculateLooMaf() {
-        int alleleCount = 2 * genoCount[Index.HOM][Index.CASE]
-                + genoCount[Index.HET][Index.CASE]
-                + 2 * genoCount[Index.HOM][Index.CTRL]
-                + genoCount[Index.HET][Index.CTRL];
-        int totalCount = alleleCount
-                + genoCount[Index.HET][Index.CASE]
-                + 2 * genoCount[Index.REF][Index.CASE]
-                + genoCount[Index.HET][Index.CTRL]
-                + 2 * genoCount[Index.REF][Index.CTRL];
-
-        double allAF = MathManager.devide(alleleCount, totalCount);
-        looMAF = allAF;
-
-        if (allAF > 0.5) {
-            isMinorRef = true;
-
-            looMAF = 1.0 - allAF;
-        } else {
-            isMinorRef = false;
-        }
-    }
-
-//    public boolean isMaxLooMafValid() {
-//        return CollapsingCommand.isMaxLooMafValid(looMAF);
-//    }
 
     /*
      * if ref is minor then only het & ref are qualified samples. If ref is
@@ -98,18 +56,6 @@ public class CollapsingOutput extends Output {
         return super.isQualifiedGeno(geno);
     }
 
-//    public String getString(Sample sample) {
-//        StringBuilder sb = new StringBuilder();
-//        calledVar.getVariantData(sb);
-//        calledVar.getAnnotationData(sb);
-//        calledVar.getExternalData(sb);
-//        getGenoStatData(sb);
-//        getCarrierData(sb, calledVar.getCarrier(sample.getId()), sample);
-//
-//        sb.append(FormatManager.getDouble(looMAF)).append(",");
-//
-//        return sb.toString();
-//    }
     // This function accepts both carrier or noncarrier instances
     public Row getRow(NonCarrier noncarrier) {
 
@@ -119,18 +65,17 @@ public class CollapsingOutput extends Output {
                 calledVar.getVariantIdStr(),
                 calledVar.getRefAllele(),
                 calledVar.getAllele(),
-                isMinorRef,
                 getGenoStr(noncarrier.getGenotype()),
                 noncarrier.getSampleId(),
                 noncarrier.getSamplePheno() == Index.CTRL ? "ctrl" : "case",
-                majorHomCount[Index.CASE],
+                genoCount[Index.HOM][Index.CASE],
                 genoCount[Index.HET][Index.CASE],
-                minorHomCount[Index.CASE],
+                genoCount[Index.REF][Index.CASE],
                 FormatManager.getFloat(minorHomFreq[Index.CASE]),
                 FormatManager.getFloat(hetFreq[Index.CASE]),
-                majorHomCount[Index.CTRL],
+                genoCount[Index.HOM][Index.CTRL],
                 genoCount[Index.HET][Index.CTRL],
-                minorHomCount[Index.CTRL],
+                genoCount[Index.REF][Index.CTRL],
                 FormatManager.getFloat(minorHomFreq[Index.CTRL]),
                 FormatManager.getFloat(hetFreq[Index.CTRL]),
                 FormatManager.getFloat(minorAlleleFreq[Index.CASE]),
@@ -158,18 +103,17 @@ public class CollapsingOutput extends Output {
             DataTypes.createStructField("Variant ID", DataTypes.StringType, true),
             DataTypes.createStructField("Ref Allele", DataTypes.StringType, true),
             DataTypes.createStructField("Alt Allele", DataTypes.StringType, true),
-            DataTypes.createStructField("Is Minor Ref", DataTypes.BooleanType, true),
             DataTypes.createStructField("Genotype", DataTypes.StringType, true),
             DataTypes.createStructField("Sample Name", DataTypes.IntegerType, true),
             DataTypes.createStructField("Sample Type", DataTypes.StringType, true),
-            DataTypes.createStructField("Major Hom Case", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Hom Case", DataTypes.IntegerType, true),
             DataTypes.createStructField("Het Case", DataTypes.IntegerType, true),
-            DataTypes.createStructField("Minor Hom Case", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Hom Ref Case", DataTypes.IntegerType, true),
             DataTypes.createStructField("Minor Hom Case Freq", DataTypes.StringType, true),
             DataTypes.createStructField("Het Case Freq", DataTypes.StringType, true),
-            DataTypes.createStructField("Major Hom Ctrl", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Hom Ctrl", DataTypes.IntegerType, true),
             DataTypes.createStructField("Het Ctrl", DataTypes.IntegerType, true),
-            DataTypes.createStructField("Minor Hom Ctrl", DataTypes.IntegerType, true),
+            DataTypes.createStructField("Hom Ref Ctrl", DataTypes.IntegerType, true),
             DataTypes.createStructField("Minor Hom Ctrl Freq", DataTypes.StringType, true),
             DataTypes.createStructField("Het Ctrl Freq", DataTypes.StringType, true),
             DataTypes.createStructField("Case Maf", DataTypes.StringType, true),
