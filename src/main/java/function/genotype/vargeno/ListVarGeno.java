@@ -26,7 +26,7 @@ public class ListVarGeno {
 
     public static void run() {
         HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSamplePhenoMap();
-        
+
         // init called_variant data
         Dataset<Row> calledVarDF = GenotypeLevelFilterCommand.getCalledVariantDF();
 
@@ -53,17 +53,19 @@ public class ListVarGeno {
                     while (covRowIterator.hasNext()) {
                         Row covBlockRow = covRowIterator.next();
                         int sampleId = covBlockRow.getInt(1);
-                        String[] covPieces = covBlockRow.getString(2).split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
+                        if (samplePhenoMap.containsKey(sampleId)) { // only include samples from --sample input
+                            String[] covPieces = covBlockRow.getString(2).split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
 
-                        TreeMap<Short, Short> tm = new TreeMap<>();
+                            TreeMap<Short, Short> tm = new TreeMap<>();
 
-                        short pos = 0;
-                        for (int index = 0; index < covPieces.length; index += 2) {
-                            tm.put(pos, NonCarrier.getCovValue(covPieces[index + 1].charAt(0)));
-                            pos += Short.parseShort(covPieces[index]);
+                            short pos = 0;
+                            for (int index = 0; index < covPieces.length; index += 2) {
+                                tm.put(pos, NonCarrier.getCovValue(covPieces[index + 1].charAt(0)));
+                                pos += Short.parseShort(covPieces[index]);
+                            }
+
+                            sampleCovMapMap.put(sampleId, tm);
                         }
-
-                        sampleCovMapMap.put(sampleId, tm);
                     }
 
                     // init calledVarRowIterator data
@@ -74,25 +76,27 @@ public class ListVarGeno {
                         Row cvRow = calledVarRowIterator.next();
 
                         int sampleId = cvRow.getInt(1);
-                        String variantId
-                        = cvRow.getString(2) // chr
-                        + "-" + cvRow.getInt(3) // pos
-                        + "-" + cvRow.getString(4) // ref
-                        + "-" + cvRow.getString(5); // alt
+                        if (samplePhenoMap.containsKey(sampleId)) { // only include samples from --sample input
+                            String variantId
+                            = cvRow.getString(2) // chr
+                            + "-" + cvRow.getInt(3) // pos
+                            + "-" + cvRow.getString(4) // ref
+                            + "-" + cvRow.getString(5); // alt
 
-                        VarGenoOutput output = varGenoOutputMap.get(variantId);
+                            VarGenoOutput output = varGenoOutputMap.get(variantId);
 
-                        if (output == null) {
-                            CalledVariant calledVariant = new CalledVariant();
-                            calledVariant.initVariantData(cvRow);
-                            output = new VarGenoOutput(calledVariant);
-                            varGenoOutputMap.put(variantId, output);
+                            if (output == null) {
+                                CalledVariant calledVariant = new CalledVariant();
+                                calledVariant.initVariantData(cvRow);
+                                output = new VarGenoOutput(calledVariant);
+                                varGenoOutputMap.put(variantId, output);
+                            }
+
+                            byte pheno = samplePhenoMap.get(sampleId);
+                            Carrier carrier = new Carrier(cvRow, pheno);
+                            output.getCalledVar().addCarrier(sampleId, carrier);
+                            output.addSampleGeno(carrier.getGenotype(), pheno);
                         }
-
-                        byte pheno = samplePhenoMap.get(sampleId);
-                        Carrier carrier = new Carrier(cvRow, pheno);
-                        output.getCalledVar().addCarrier(sampleId, carrier);
-                        output.addSampleGeno(carrier.getGenotype(), pheno);
                     }
 
                     LinkedList<Row> outputRows = new LinkedList<>();
