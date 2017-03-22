@@ -149,7 +149,7 @@ public class GenotypeLevelFilterCommand {
         if (genotypeQualGQ != Data.NO_FILTER) {
             Column c = col("genotype_qual_GQ").geq(genotypeQualGQ);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("genotype_qual_GQ").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -157,7 +157,7 @@ public class GenotypeLevelFilterCommand {
         if (strandBiasFS != Data.NO_FILTER) {
             Column c = col("strand_bias_FS").leq(strandBiasFS);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("strand_bias_FS").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -165,7 +165,7 @@ public class GenotypeLevelFilterCommand {
         if (haplotypeScore != Data.NO_FILTER) {
             Column c = col("haplotype_score").leq(haplotypeScore);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("haplotype_score").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -173,7 +173,7 @@ public class GenotypeLevelFilterCommand {
         if (rmsMapQualMQ != Data.NO_FILTER) {
             Column c = col("rms_map_qual_MQ").geq(rmsMapQualMQ);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("rms_map_qual_MQ").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -181,7 +181,7 @@ public class GenotypeLevelFilterCommand {
         if (qualByDepthQD != Data.NO_FILTER) {
             Column c = col("qual_by_depth_QD").geq(qualByDepthQD);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("qual_by_depth_QD").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -189,7 +189,7 @@ public class GenotypeLevelFilterCommand {
         if (qual != Data.NO_FILTER) {
             Column c = col("qual").geq(qual);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("qual").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -197,7 +197,7 @@ public class GenotypeLevelFilterCommand {
         if (readPosRankSum != Data.NO_FILTER) {
             Column c = col("read_pos_rank_sum").geq(readPosRankSum);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("read_pos_rank_sum").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -205,7 +205,15 @@ public class GenotypeLevelFilterCommand {
         if (mapQualRankSum != Data.NO_FILTER) {
             Column c = col("map_qual_rank_sum").geq(mapQualRankSum);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("map_qual_rank_sum").isNull().or(c));
+            } else {
+                l.add(c);
+            }
+        }
+        if (minCoverage != Data.NO_FILTER) {
+            Column c = col("samtools_raw_coverage").geq(minCoverage);
+            if (isQcMissingIncluded) {
+                l.add(col("samtools_raw_coverage").isNull().or(c));
             } else {
                 l.add(c);
             }
@@ -218,9 +226,7 @@ public class GenotypeLevelFilterCommand {
             while (l.size() > 0) {
                 whereCondition = whereCondition.and(l.pop());
             }
-            return carrierDF.withColumn("samtools_raw_coverage",
-                    when(whereCondition, col("samtools_raw_coverage"))
-                    .otherwise(lit(Data.SHORT_NA)));
+            return carrierDF.where(whereCondition);
         }
 
         return carrierDF;

@@ -21,7 +21,8 @@ import utils.FormatManager;
  */
 public class CollapsingOutput extends Output {
 
-    double looMAF = 0;
+    private double looMAF = 0;
+    private String geneName;
 
     public CollapsingOutput(CalledVariant c) {
         super(c);
@@ -41,6 +42,16 @@ public class CollapsingOutput extends Output {
                 summary.updateSampleVariantCount4SingleVar(nc.getSampleId());
             }
         }
+    }
+
+    public void setGeneName(String value) {
+        if (geneName == null) {
+            geneName = value;
+        }
+    }
+
+    public String getGeneName() {
+        return geneName;
     }
 
     /*

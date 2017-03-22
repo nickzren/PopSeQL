@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +46,8 @@ public class CollapsingSingleVariant {
 
         Dataset<Row> filteredCalledVarDF = GenotypeLevelFilterCommand.applyCarrierFilters(calledVarDF);
 
+        filteredCalledVarDF = calledVarDF.filter(new VariantGeneFilterFunc()); // applied --gene filter
+
         KeyValueGroupedDataset<String, Row> groupedCalledVarDF = filteredCalledVarDF.groupByKey(
                 (Row r) -> r.getString(0), // group by block id
                 Encoders.STRING());
@@ -62,6 +63,43 @@ public class CollapsingSingleVariant {
         // init output data
         Dataset<Row> outputDF = groupedCalledVarDF.cogroup(groupedCoverageDF,
                 (String k, Iterator<Row> calledVarRowIterator, Iterator<Row> covRowIterator) -> {
+                    // init calledVarRowIterator data
+                    HashMap<String, CollapsingOutput> outputMap = new HashMap<>();
+
+                    // init carrier data
+                    while (calledVarRowIterator.hasNext()) {
+                        Row cvRow = calledVarRowIterator.next();
+
+                        int sampleId = cvRow.getInt(1);
+                        if (samplePhenoMap.containsKey(sampleId)) { // only include samples from --sample input
+                            String variantId
+                            = cvRow.getString(2) // chr
+                            + "-" + cvRow.getInt(3) // pos
+                            + "-" + cvRow.getString(4) // ref
+                            + "-" + cvRow.getString(5); // alt
+
+                            CollapsingOutput output = outputMap.get(variantId);
+
+                            if (output == null) {
+                                CalledVariant calledVariant = new CalledVariant();
+                                calledVariant.initVariantData(cvRow);
+                                output = new CollapsingOutput(calledVariant);
+                                outputMap.put(variantId, output);
+                            }
+
+                            Gene gene = geneMap.get(output.getCalledVar().chrStr)
+                            .floorEntry(output.getCalledVar().position).getValue();
+                            if (gene.contains(output.getCalledVar().position)) {
+                                output.setGeneName(gene.getName());
+                            }
+
+                            byte pheno = samplePhenoMap.get(sampleId);
+                            Carrier carrier = new Carrier(cvRow, pheno);
+                            output.getCalledVar().addCarrier(sampleId, carrier);
+                            output.addSampleGeno(carrier.getGenotype(), pheno);
+                        }
+                    }
+
                     // init covRowIterator data
                     HashMap<Integer, TreeMap<Short, Short>> sampleCovMapMap = new HashMap<>();
                     // \-> Maps each sample_id to a tree map that maps the block offset to the coverage value
@@ -83,40 +121,9 @@ public class CollapsingSingleVariant {
                         }
                     }
 
-                    // init calledVarRowIterator data
-                    HashMap<String, CollapsingOutput> varGenoOutputMap = new HashMap<>();
-
-                    // init carrier data
-                    while (calledVarRowIterator.hasNext()) {
-                        Row cvRow = calledVarRowIterator.next();
-
-                        int sampleId = cvRow.getInt(1);
-                        if (samplePhenoMap.containsKey(sampleId)) { // only include samples from --sample input
-                            String variantId
-                            = cvRow.getString(2) // chr
-                            + "-" + cvRow.getInt(3) // pos
-                            + "-" + cvRow.getString(4) // ref
-                            + "-" + cvRow.getString(5); // alt
-
-                            CollapsingOutput varGenoOutput = varGenoOutputMap.get(variantId);
-
-                            if (varGenoOutput == null) {
-                                CalledVariant calledVariant = new CalledVariant();
-                                calledVariant.initVariantData(cvRow);
-                                varGenoOutput = new CollapsingOutput(calledVariant);
-                                varGenoOutputMap.put(variantId, varGenoOutput);
-                            }
-
-                            byte pheno = samplePhenoMap.get(sampleId);
-                            Carrier carrier = new Carrier(cvRow, pheno);
-                            varGenoOutput.getCalledVar().addCarrier(sampleId, carrier);
-                            varGenoOutput.addSampleGeno(carrier.getGenotype(), pheno);
-                        }
-                    }
-
                     LinkedList<Row> outputRows = new LinkedList<>();
 
-                    for (CollapsingOutput output : varGenoOutputMap.values()) {
+                    for (CollapsingOutput output : outputMap.values()) {
                         // init non-carrier data
                         for (Map.Entry<Integer, Byte> samplePhenoEntry : samplePhenoMap.entrySet()) {
                             int sampleId = samplePhenoEntry.getKey();
@@ -138,24 +145,12 @@ public class CollapsingSingleVariant {
 
                         // filter variants
                         if (output.isValid()) {
-                            TreeMap<Integer, Gene> geneChrMap = geneMap.get(output.getCalledVar().chrStr);
+                            CollapsingGeneSummary summary = summaryMap.get(output.getGeneName());
 
-                            if (geneChrMap != null) {
-                                Entry<Integer, Gene> geneEntry = geneChrMap.floorEntry(output.getCalledVar().position);
-                                
-                                if (geneEntry != null) {
-                                    Gene gene = geneEntry.getValue();
+                            summary.updateVariantCount(output);
 
-                                    if (gene.contains(output.getCalledVar().position)) {
-                                        CollapsingGeneSummary summary = summaryMap.get(gene.getName());
-
-                                        summary.updateVariantCount(output);
-
-                                        // prepare genotypes.csv output data
-                                        output.appendRowsToList(outputRows, summary);
-                                    }
-                                }
-                            }
+                            // prepare genotypes.csv output data
+                            output.appendRowsToList(outputRows, summary);
                         }
                     }
 
