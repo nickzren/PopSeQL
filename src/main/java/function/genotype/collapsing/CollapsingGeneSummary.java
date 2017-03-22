@@ -23,11 +23,10 @@ public class CollapsingGeneSummary extends CollapsingSummary {
                 + "Qualified Ctrl Freq,"
                 + "Enriched Direction,"
                 + "Fet P,"
-                + "Linear P,"
-                + "Logistic P,";
+//                + "Linear P,"
+//                + "Logistic P,"
+                ;
     }
-
-    String coverageSummaryLine;
 
     public CollapsingGeneSummary(String name) {
         super(name);
@@ -49,8 +48,8 @@ public class CollapsingGeneSummary extends CollapsingSummary {
         sb.append(FormatManager.getDouble(qualifiedCtrlFreq)).append(",");
         sb.append(enrichedDirection).append(",");
         sb.append(FormatManager.getDouble(fetP)).append(",");
-        sb.append(FormatManager.getDouble(linearP)).append(",");
-        sb.append(FormatManager.getDouble(logisticP)).append(",");
+//        sb.append(FormatManager.getDouble(linearP)).append(",");
+//        sb.append(FormatManager.getDouble(logisticP)).append(",");
 
         return sb.toString();
     }

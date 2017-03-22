@@ -15,6 +15,8 @@ public class SparkManager {
     public static void start() {
         SparkManager.session = SparkSession.builder()
                 .appName("PopSeQL")
+                .config("spark.yarn.executor.memoryOverhead", "1024")
+                .config("spark.driver.maxResultSize", "5g")
                 .config("spark.sql.crossJoin.enabled", "true")
                 .config("spark.shuffle.spill.compress","false")
                 .config("spark.serializer","org.apache.spark.serializer.KryoSerializer")

@@ -34,8 +34,8 @@ public class CollapsingSummary implements Comparable, Serializable {
     float qualifiedCtrlFreq = Data.FLOAT_NA;
     String enrichedDirection = Data.STRING_NA;
     double fetP = Data.DOUBLE_NA;
-    double logisticP = Data.DOUBLE_NA;
-    double linearP = Data.DOUBLE_NA;
+//    double logisticP = Data.DOUBLE_NA;
+//    double linearP = Data.DOUBLE_NA;
 
     // no output
     static final int totalCase = SampleManager.getCaseNum();
@@ -53,13 +53,13 @@ public class CollapsingSummary implements Comparable, Serializable {
         totalIndel = SparkManager.context.accumulator(0);
     }
 
-    public void setLogisticP(double value) {
-        logisticP = value;
-    }
-
-    public void setLinearP(double value) {
-        linearP = value;
-    }
+//    public void setLogisticP(double value) {
+//        logisticP = value;
+//    }
+//
+//    public void setLinearP(double value) {
+//        linearP = value;
+//    }
 
     public void updateSampleVariantCount4SingleVar(int sampleId) {
         sampleVariantCountMap.get(sampleId).add(1);

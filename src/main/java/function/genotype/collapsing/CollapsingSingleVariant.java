@@ -142,7 +142,7 @@ public class CollapsingSingleVariant {
 
                             if (geneChrMap != null) {
                                 Entry<Integer, Gene> geneEntry = geneChrMap.floorEntry(output.getCalledVar().position);
-
+                                
                                 if (geneEntry != null) {
                                     Gene gene = geneEntry.getValue();
 
