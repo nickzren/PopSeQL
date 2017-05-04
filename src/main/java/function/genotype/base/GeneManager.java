@@ -32,6 +32,12 @@ public class GeneManager {
                     String[] tmp = line.split("\t"); // chr, start, end, gene name
 
                     String chr = tmp[0];
+
+                    if (!AnnotationLevelFilterCommand.regionInput.isEmpty()
+                            && !chr.equals(AnnotationLevelFilterCommand.regionInput)) {
+                        continue;
+                    }
+
                     int start = Integer.valueOf(tmp[1]);
                     int end = Integer.valueOf(tmp[2]);
                     String geneName = tmp[3];

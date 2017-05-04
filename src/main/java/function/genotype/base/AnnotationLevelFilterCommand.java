@@ -11,6 +11,7 @@ public class AnnotationLevelFilterCommand {
 
     public static String geneInput = "";
     public static String geneBoundaryFile = "";
+    public static String regionInput = "";
 
     public static void initOptions(Iterator<CommandOption> iterator)
             throws Exception {
@@ -24,6 +25,9 @@ public class AnnotationLevelFilterCommand {
                     break;
                 case "--gene-boundary":
                     geneBoundaryFile = option.getValue();
+                    break;
+                case "--region":
+                    regionInput = option.getValue();
                     break;
                 default:
                     continue;

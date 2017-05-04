@@ -1,5 +1,6 @@
 package function.genotype.collapsing;
 
+import function.genotype.base.AnnotationLevelFilterCommand;
 import function.genotype.base.CalledVariant;
 import function.genotype.base.Carrier;
 import function.genotype.base.Gene;
@@ -25,6 +26,7 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
+import org.apache.spark.util.SizeEstimator;
 import utils.CommonCommand;
 import utils.SparkManager;
 
@@ -38,23 +40,28 @@ public class CollapsingSingleVariant {
 
     public static void run() {
         HashMap<Integer, Byte> samplePhenoMap = SampleManager.getSamplePhenoMap();
+        System.out.println("samplePhenoMap bytes: " + SizeEstimator.estimate(samplePhenoMap));
         HashMap<String, TreeMap<Integer, Gene>> geneMap = GeneManager.getGeneMap();
+        System.out.println("geneMap bytes: " + SizeEstimator.estimate(geneMap));
         HashMap<String, CollapsingGeneSummary> summaryMap = getSummaryMap();
-
+        System.out.println("summaryMap bytes: " + SizeEstimator.estimate(summaryMap));
+        
         // init called_variant data
         Dataset<Row> calledVarDF = GenotypeLevelFilterCommand.getCalledVariantDF();
 
-        Dataset<Row> filteredCalledVarDF = GenotypeLevelFilterCommand.applyCarrierFilters(calledVarDF);
+        calledVarDF = calledVarDF.filter(new VariantGeneFilterFunc()); // applied --gene filter
 
-        filteredCalledVarDF = calledVarDF.filter(new VariantGeneFilterFunc()); // applied --gene filter
+        calledVarDF = GenotypeLevelFilterCommand.applyCarrierFilters(calledVarDF);
 
-        KeyValueGroupedDataset<String, Row> groupedCalledVarDF = filteredCalledVarDF.groupByKey(
+        KeyValueGroupedDataset<String, Row> groupedCalledVarDF = calledVarDF.groupByKey(
                 (Row r) -> r.getString(0), // group by block id
                 Encoders.STRING());
 
         // init read_coverage data
         Dataset<Row> covDF
                 = GenotypeLevelFilterCommand.getReadCoverageDF();
+
+        covDF = covDF.filter(new CovRegionFilterFunc(AnnotationLevelFilterCommand.regionInput));
 
         KeyValueGroupedDataset<String, Row> groupedCoverageDF = covDF.groupByKey(
                 (Row r) -> r.getString(0), // group by block id
