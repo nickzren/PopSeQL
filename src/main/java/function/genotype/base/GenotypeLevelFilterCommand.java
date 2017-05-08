@@ -8,7 +8,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
-import static org.apache.spark.sql.functions.when;
 import static utils.CommandManager.getValidDouble;
 import static utils.CommandManager.getValidFloat;
 import static utils.CommandManager.getValidInteger;
