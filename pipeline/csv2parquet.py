@@ -45,28 +45,27 @@ def main():
             StructField("pos", IntegerType(), True),
             StructField("ref", StringType(), True),
             StructField("alt", StringType(), True),
-            StructField("genotype", ByteType(), True),
-            StructField("samtools_raw_coverage", IntegerType(), True),
-            StructField("gatk_filtered_coverage", IntegerType(), True),
-            StructField("reads_ref", ShortType(), True),
-            StructField("reads_alt", ShortType(), True),
-            StructField("vqslod", FloatType(), True),
-            StructField("genotype_qual_GQ", FloatType(), True),
-            StructField("strand_bias_FS", FloatType(), True),
-            StructField("haplotype_score", FloatType(), True),
-            StructField("rms_map_qual_MQ", FloatType(), True),
-            StructField("qual_by_depth_QD", FloatType(), True),
-            StructField("qual", FloatType(), True),
-            StructField("read_pos_rank_sum", FloatType(), True),
-            StructField("map_qual_rank_sum", FloatType(), True),
-            StructField("pass_fail_status", StringType(), True)
+            StructField("GT", IntegerType(), True),
+            StructField("DP", IntegerType(), True),
+            StructField("AD_REF", IntegerType(), True),
+            StructField("AD_ALT", IntegerType(), True),
+            StructField("GQ", IntegerType(), True),
+            StructField("VQSLOD", FloatType(), True),
+            StructField("FS", FloatType(), True),
+            StructField("MQ", IntegerType(), True),
+            StructField("QD", IntegerType(), True),
+            StructField("QUAL", IntegerType(), True),
+            StructField("ReadPosRankSum", FloatType(), True),
+            StructField("MQRankSum", FloatType(), True),           
+            StructField("FILTER", StringType(), True)
         ]
-    elif schemaName == "ReadCoverage":
+                       
+    elif schemaName == "DP_bins":
         # read coverage schema
         fields = [
             StructField("block_id", StringType(), True),
             StructField("sample_id", IntegerType(), True),
-            StructField("min_coverage", StringType(), True)
+            StructField("DP_string", StringType(), True)
         ]
 
     schema = StructType(fields)
