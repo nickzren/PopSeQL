@@ -10,6 +10,7 @@ from pyspark import SparkContext
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
+import glob
 
 
 def main():
@@ -45,15 +46,15 @@ def main():
             StructField("pos", IntegerType(), True),
             StructField("ref", StringType(), True),
             StructField("alt", StringType(), True),
-            StructField("GT", IntegerType(), True),
-            StructField("DP", IntegerType(), True),
-            StructField("AD_REF", IntegerType(), True),
-            StructField("AD_ALT", IntegerType(), True),
+            StructField("GT", ByteType(), True),
+            StructField("DP", ShortType(), True),
+            StructField("AD_REF", ShortType(), True),
+            StructField("AD_ALT", ShortType(), True),
             StructField("GQ", IntegerType(), True),
             StructField("VQSLOD", FloatType(), True),
             StructField("FS", FloatType(), True),
-            StructField("MQ", IntegerType(), True),
-            StructField("QD", IntegerType(), True),
+            StructField("MQ", ShortType(), True),
+            StructField("QD", ShortType(), True),
             StructField("QUAL", IntegerType(), True),
             StructField("ReadPosRankSum", FloatType(), True),
             StructField("MQRankSum", FloatType(), True),           
@@ -69,14 +70,14 @@ def main():
         ]
 
     schema = StructType(fields)
-
-    linesRDD = sqlContext.read.csv(
-        inputFilePath, schema, nullValue='\\N')
+    
+    linesRDD = sqlContext.read.format('com.databricks.spark.csv')\
+        .options(header='false',delimiter='\t',treatEmptyValuesAsNulls = 'true',nullValue='\\N').load(inputFilePath, schema = schema)
 
     linesRDD.printSchema()
-
+    linesRDD.show()
     linesRDD.write.parquet(outputDir)
-
+    
     sc.stop()
 
 if __name__ == '__main__':
