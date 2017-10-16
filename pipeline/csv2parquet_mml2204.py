@@ -76,7 +76,7 @@ def main():
 
     linesRDD.printSchema()
     linesRDD.show()
-    #linesRDD.write.parquet(outputDir)
+    linesRDD.write.parquet(outputDir)
     
     sc.stop()
 
