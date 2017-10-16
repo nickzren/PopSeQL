@@ -46,7 +46,7 @@ def main():
             StructField("pos", IntegerType(), True),
             StructField("ref", StringType(), True),
             StructField("alt", StringType(), True),
-            StructField("GT", IntegerType(), True),
+            StructField("GT", ByteType(), True),
             StructField("DP", ShortType(), True),
             StructField("AD_REF", ShortType(), True),
             StructField("AD_ALT", ShortType(), True),
