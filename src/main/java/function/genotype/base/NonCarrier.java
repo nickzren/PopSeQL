@@ -10,9 +10,24 @@ import global.Index;
 public class NonCarrier {
 
     public int sampleId;
-    public byte genotype;
-    public int coverage;
+    public byte GT;
+    public short DPbin;
     public byte samplePheno;
+    
+    public static boolean isValidDpBin(char letter){
+        switch (letter) {
+            case 'a':
+            case 'b':
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'g':
+                return true;
+            default:
+                return false;
+        }
+    }
 
     public static short getCovValue(char letter) {
         switch (letter) {
@@ -26,7 +41,11 @@ public class NonCarrier {
             case 'd':
                 return 20;
             case 'e':
-                return 201;
+                return 30;
+            case 'f':
+                return 50;
+            case 'g':
+                return 200;
         }
     }
 
@@ -35,12 +54,12 @@ public class NonCarrier {
 
     public NonCarrier(int sample_id, short cov, byte pheno) {
         sampleId = sample_id;
-        coverage = cov;
+        DPbin = cov;
         samplePheno = pheno;
-        if (coverage == Data.SHORT_NA) {
-            genotype = Data.BYTE_NA;
+        if (DPbin == Data.SHORT_NA) {
+            GT = Data.BYTE_NA;
         } else {
-            genotype = Index.REF;
+            GT = Index.REF;
         }
     }
 
@@ -53,10 +72,10 @@ public class NonCarrier {
     }
 
     public byte getGenotype() {
-        return genotype;
+        return GT;
     }
 
-    public int getCoverage() {
-        return coverage;
+    public short getDPBin() {
+        return DPbin;
     }
 }

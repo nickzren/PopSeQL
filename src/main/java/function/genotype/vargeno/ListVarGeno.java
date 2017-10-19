@@ -54,14 +54,20 @@ public class ListVarGeno {
                         Row covBlockRow = covRowIterator.next();
                         int sampleId = covBlockRow.getInt(1);
                         if (samplePhenoMap.containsKey(sampleId)) { // only include samples from --sample input
-                            String[] covPieces = covBlockRow.getString(2).split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
-
+                            short pos = 0;
+                            StringBuilder sb = new StringBuilder();
                             TreeMap<Short, Short> tm = new TreeMap<>();
 
-                            short pos = 0;
-                            for (int index = 0; index < covPieces.length; index += 2) {
-                                tm.put(pos, NonCarrier.getCovValue(covPieces[index + 1].charAt(0)));
-                                pos += Short.parseShort(covPieces[index]);
+                            for (char ch : covBlockRow.getString(2).toCharArray()) {
+                                NonCarrier.getCovValue(ch);
+
+                                if (!NonCarrier.isValidDpBin(ch)) {
+                                    sb.append(ch);
+                                } else {
+                                    tm.put(pos, NonCarrier.getCovValue(ch));
+                                    pos += Integer.parseInt(sb.toString(), 36); // add cov bin inteval
+                                    sb.setLength(0);
+                                }
                             }
 
                             sampleCovMapMap.put(sampleId, tm);
@@ -132,8 +138,7 @@ public class ListVarGeno {
                 RowEncoder.apply(VarGenoOutput.getSchema()));
 
         // Write output
-        outputDF
-                .coalesce(SparkManager.session.sparkContext().defaultParallelism())
+        outputDF.coalesce(SparkManager.session.sparkContext().defaultParallelism())
                 .write()
                 //.mode(i == 0 ? "overwrite" : "append")
                 .mode("overwrite")

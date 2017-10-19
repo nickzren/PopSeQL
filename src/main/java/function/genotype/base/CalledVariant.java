@@ -40,8 +40,7 @@ public class CalledVariant {
 
         isIndel = allele.length() != refAllele.length();
 
-        // Magic trick to get block offset
-        blockOffset = (short) ((position - 1) & 0x3FF);
+        blockOffset = (short) (position % 1000); // 1k block size
     }
 
     public HashMap<Integer, Carrier> getCarrierMap() {

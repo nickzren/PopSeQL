@@ -14,8 +14,8 @@ public class Output {
 
     protected int[][] genoCount = new int[3][2];
     protected float[] hetFreq = new float[2];
-    protected float[] minorAlleleFreq = new float[2];
-    protected float[] minorHomFreq = new float[2];
+    protected float[] alleleFreq = new float[2];
+    protected float[] homFreq = new float[2];
 
     public Output(CalledVariant c) {
         calledVar = c;
@@ -38,22 +38,16 @@ public class Output {
     }
 
     public float[] getMinorAlleleFreq() {
-        return minorAlleleFreq;
+        return alleleFreq;
     }
 
     public float[] getMinorHomFreq() {
-        return minorHomFreq;
+        return homFreq;
     }
 
     public void addSampleGeno(byte geno, int pheno) {
         if (geno != Data.BYTE_NA) {
             genoCount[geno][pheno]++;
-        }
-    }
-
-    public void deleteSampleGeno(int geno, int pheno) {
-        if (geno != Data.BYTE_NA) {
-            genoCount[geno][pheno]--;
         }
     }
 
@@ -69,24 +63,14 @@ public class Output {
         int caseTotalAC = caseAC + genoCount[Index.HET][Index.CASE]
                 + 2 * genoCount[Index.REF][Index.CASE];
 
-        float caseAF = MathManager.devide(caseAC, caseTotalAC); // (2*hom + het) / (2*hom + 2*het + 2*ref)
-
-        minorAlleleFreq[Index.CASE] = caseAF;
-        if (caseAF > 0.5) {
-            minorAlleleFreq[Index.CASE] = 1.0f - caseAF;
-        }
+        alleleFreq[Index.CASE] = MathManager.devide(caseAC, caseTotalAC); // (2*hom + het) / (2*hom + 2*het + 2*ref)
 
         int ctrlAC = 2 * genoCount[Index.HOM][Index.CTRL]
                 + genoCount[Index.HET][Index.CTRL];
         int ctrlTotalAC = ctrlAC + genoCount[Index.HET][Index.CTRL]
                 + 2 * genoCount[Index.REF][Index.CTRL];
 
-        float ctrlAF = MathManager.devide(ctrlAC, ctrlTotalAC);
-
-        minorAlleleFreq[Index.CTRL] = ctrlAF;
-        if (ctrlAF > 0.5) {
-            minorAlleleFreq[Index.CTRL] = 1.0f - ctrlAF;
-        }
+        alleleFreq[Index.CTRL] = MathManager.devide(ctrlAC, ctrlTotalAC);
     }
 
     private void calculateGenotypeFreq() {
@@ -101,8 +85,8 @@ public class Output {
                 + genoCount[Index.REF][Index.CTRL];
 
         // hom / (hom + het + ref)
-        minorHomFreq[Index.CASE] = MathManager.devide(genoCount[Index.HOM][Index.CASE], totalCaseGenotypeCount);
-        minorHomFreq[Index.CTRL] = MathManager.devide(genoCount[Index.HOM][Index.CTRL], totalCtrlGenotypeCount);
+        homFreq[Index.CASE] = MathManager.devide(genoCount[Index.HOM][Index.CASE], totalCaseGenotypeCount);
+        homFreq[Index.CTRL] = MathManager.devide(genoCount[Index.HOM][Index.CTRL], totalCtrlGenotypeCount);
 
         hetFreq[Index.CASE] = MathManager.devide(genoCount[Index.HET][Index.CASE], totalCaseGenotypeCount);
         hetFreq[Index.CTRL] = MathManager.devide(genoCount[Index.HET][Index.CTRL], totalCtrlGenotypeCount);
@@ -136,6 +120,6 @@ public class Output {
 
     public boolean isValid() {
         return GenotypeLevelFilterCommand.isMinVarPresentValid(getVarPresent())
-                && GenotypeLevelFilterCommand.isMaxCtrlMafValid(minorAlleleFreq[Index.CTRL]);
+                && GenotypeLevelFilterCommand.isMaxCtrlMafValid(alleleFreq[Index.CTRL]);
     }
 }

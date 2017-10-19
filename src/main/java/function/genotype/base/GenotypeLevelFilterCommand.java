@@ -14,6 +14,21 @@ import static utils.CommandManager.getValidInteger;
 import utils.CommandOption;
 import utils.SparkManager;
 import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
+import static utils.CommandManager.checkValueValid;
 
 /**
  *
@@ -29,12 +44,10 @@ public class GenotypeLevelFilterCommand {
     public static int minCaseCoverageNoCall = Data.NO_FILTER;
     public static int minCtrlCoverageCall = Data.NO_FILTER;
     public static int minCtrlCoverageNoCall = Data.NO_FILTER;
-    public static String[] varStatus; // null: no filer or all    
-    public static float genotypeQualGQ = Data.NO_FILTER;
-    public static float strandBiasFS = Data.NO_FILTER;
-    public static float haplotypeScore = Data.NO_FILTER;
-    public static float rmsMapQualMQ = Data.NO_FILTER;
-    public static float qualByDepthQD = Data.NO_FILTER;
+    public static float GQ = Data.NO_FILTER;
+    public static float FS = Data.NO_FILTER;
+    public static float MQ = Data.NO_FILTER;
+    public static float QD = Data.NO_FILTER;
     public static float qual = Data.NO_FILTER;
     public static float readPosRankSum = Data.NO_FILTER;
     public static float mapQualRankSum = Data.NO_FILTER;
@@ -70,34 +83,21 @@ public class GenotypeLevelFilterCommand {
                     checkValueValid(new String[]{"0", "3", "10", "20", "201"}, option);
                     minCoverage = getValidInteger(option);
                     break;
-                case "--var-status":
-                    checkValueValid(VARIANT_STATUS, option);
-                    String str = option.getValue().replace("+", ",");
-                    if (str.contains("all")) {
-                        varStatus = null;
-                    } else {
-                        varStatus = str.split(",");
-                    }
-                    break;
                 case "--gq":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    genotypeQualGQ = getValidFloat(option);
+                    GQ = getValidFloat(option);
                     break;
                 case "--fs":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    strandBiasFS = getValidFloat(option);
-                    break;
-                case "--hap-score":
-                    checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    haplotypeScore = getValidFloat(option);
+                    FS = getValidFloat(option);
                     break;
                 case "--mq":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    rmsMapQualMQ = getValidFloat(option);
+                    MQ = getValidFloat(option);
                     break;
                 case "--qd":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
-                    qualByDepthQD = getValidFloat(option);
+                    QD = getValidFloat(option);
                     break;
                 case "--qual":
                     checkValueValid(Data.NO_FILTER, Data.NO_FILTER, option);
@@ -127,92 +127,92 @@ public class GenotypeLevelFilterCommand {
     }
 
     public static Dataset<Row> getCalledVariantDF() {
+//        return SparkManager.session.read()
+//                .format("com.databricks.spark.csv")
+//                //                .option("inferSchema", "true")
+//                //                .option("header", "true")
+//                .option("delimiter", "\t")
+//                .option("nullValue", "\\N")
+//                .load(calledVariantDataPath);
+
         return SparkManager.session.read().parquet(calledVariantDataPath);
     }
 
     public static Dataset<Row> getReadCoverageDF() {
+//        return SparkManager.session.read()
+//                .format("com.databricks.spark.csv")
+//                //                .option("inferSchema", "true")
+//                //                .option("header", "true")
+//                .option("delimiter", "\t")
+//                .option("nullValue", "\\N")
+//                .load(readCoverageDataPath);
+
         return SparkManager.session.read().parquet(readCoverageDataPath);
     }
 
     public static Dataset<Row> applyCarrierFilters(Dataset<Row> carrierDF) {
         LinkedList<Column> l = new LinkedList<>();
 
-        if (varStatus != null) {
-            Column c = col("pass_fail_status").isin((Object[]) varStatus);
+        if (GQ != Data.NO_FILTER) {
+            Column c = col("GQ").geq(GQ);
             if (isQcMissingIncluded) {
-                l.add(col("pass_fail_status").isNull().or(c));
+                l.add(col("GQ").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
-        if (genotypeQualGQ != Data.NO_FILTER) {
-            Column c = col("genotype_qual_GQ").geq(genotypeQualGQ);
+        if (FS != Data.NO_FILTER) {
+            Column c = col("FS").leq(FS);
             if (isQcMissingIncluded) {
-                l.add(col("genotype_qual_GQ").isNull().or(c));
+                l.add(col("FS").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
-        if (strandBiasFS != Data.NO_FILTER) {
-            Column c = col("strand_bias_FS").leq(strandBiasFS);
+        if (MQ != Data.NO_FILTER) {
+            Column c = col("MQ").geq(MQ);
             if (isQcMissingIncluded) {
-                l.add(col("strand_bias_FS").isNull().or(c));
+                l.add(col("MQ").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
-        if (haplotypeScore != Data.NO_FILTER) {
-            Column c = col("haplotype_score").leq(haplotypeScore);
+        if (QD != Data.NO_FILTER) {
+            Column c = col("QD").geq(QD);
             if (isQcMissingIncluded) {
-                l.add(col("haplotype_score").isNull().or(c));
-            } else {
-                l.add(c);
-            }
-        }
-        if (rmsMapQualMQ != Data.NO_FILTER) {
-            Column c = col("rms_map_qual_MQ").geq(rmsMapQualMQ);
-            if (isQcMissingIncluded) {
-                l.add(col("rms_map_qual_MQ").isNull().or(c));
-            } else {
-                l.add(c);
-            }
-        }
-        if (qualByDepthQD != Data.NO_FILTER) {
-            Column c = col("qual_by_depth_QD").geq(qualByDepthQD);
-            if (isQcMissingIncluded) {
-                l.add(col("qual_by_depth_QD").isNull().or(c));
+                l.add(col("QD").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
         if (qual != Data.NO_FILTER) {
-            Column c = col("qual").geq(qual);
+            Column c = col("QUAL").geq(qual);
             if (isQcMissingIncluded) {
-                l.add(col("qual").isNull().or(c));
+                l.add(col("QUAL").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
         if (readPosRankSum != Data.NO_FILTER) {
-            Column c = col("read_pos_rank_sum").geq(readPosRankSum);
+            Column c = col("ReadPosRankSum").geq(readPosRankSum);
             if (isQcMissingIncluded) {
-                l.add(col("read_pos_rank_sum").isNull().or(c));
+                l.add(col("ReadPosRankSum").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
         if (mapQualRankSum != Data.NO_FILTER) {
-            Column c = col("map_qual_rank_sum").geq(mapQualRankSum);
+            Column c = col("MQRankSum").geq(mapQualRankSum);
             if (isQcMissingIncluded) {
-                l.add(col("map_qual_rank_sum").isNull().or(c));
+                l.add(col("MQRankSum").isNull().or(c));
             } else {
                 l.add(c);
             }
         }
         if (minCoverage != Data.NO_FILTER) {
-            Column c = col("samtools_raw_coverage").geq(minCoverage);
+            Column c = col("DP").geq(minCoverage);
             if (isQcMissingIncluded) {
-                l.add(col("samtools_raw_coverage").isNull().or(c));
+                l.add(col("DP").isNull().or(c));
             } else {
                 l.add(c);
             }

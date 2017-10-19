@@ -11,37 +11,33 @@ import utils.MathManager;
  */
 public class Carrier extends NonCarrier {
 
-    private int gatkFilteredCoverage;
-    private short readsRef;
-    private short readsAlt;
+    private short adREF;
+    private short adAlt;
+    private int GQ;
     private float vqslod;
-    private float genotypeQualGQ;
-    private float strandBiasFS;
-    private float haplotypeScore;
-    private float rmsMapQualMQ;
-    private float qualByDepthQD;
-    private float qual;
+    private float FS;
+    private short MQ;
+    private short QD;
+    private int qual;
     private float readPosRankSum;
     private float mapQualRankSum;
-    private String passFailStatus;
+    private String FILTER;
 
     public Carrier(Row r, byte pheno) {
         sampleId = r.getInt(r.fieldIndex("sample_id"));
-        coverage = r.getInt(r.fieldIndex("samtools_raw_coverage"));
-        genotype = r.getByte(r.fieldIndex("genotype"));
-        gatkFilteredCoverage = r.getInt(r.fieldIndex("gatk_filtered_coverage"));
-        readsRef = r.getShort(r.fieldIndex("reads_ref"));
-        readsAlt = r.getShort(r.fieldIndex("reads_alt"));
-        vqslod = getFloat((Float) r.get(r.fieldIndex("vqslod")));
-        genotypeQualGQ = getFloat((Float) r.get(r.fieldIndex("genotype_qual_GQ")));
-        strandBiasFS = getFloat((Float) r.get(r.fieldIndex("strand_bias_FS")));
-        haplotypeScore = getFloat((Float) r.get(r.fieldIndex("haplotype_score")));
-        rmsMapQualMQ = getFloat((Float) r.get(r.fieldIndex("rms_map_qual_MQ")));
-        qualByDepthQD = getFloat((Float) r.get(r.fieldIndex("qual_by_depth_QD")));
-        qual = getFloat((Float) r.get(r.fieldIndex("qual")));
-        readPosRankSum = getFloat((Float) r.get(r.fieldIndex("read_pos_rank_sum")));
-        mapQualRankSum = getFloat((Float) r.get(r.fieldIndex("map_qual_rank_sum")));
-        passFailStatus = r.getString(r.fieldIndex("pass_fail_status"));
+        GT = r.getByte(r.fieldIndex("GT"));
+        DPbin = r.getShort(r.fieldIndex("DP"));
+        adREF = getShort((Short) r.get(r.fieldIndex("AD_REF")));
+        adAlt = getShort((Short) r.get(r.fieldIndex("AD_ALT")));
+        GQ = r.getInt(r.fieldIndex("GQ"));
+        vqslod = getFloat((Float) r.get(r.fieldIndex("VQSLOD")));
+        FS = getFloat((Float) r.get(r.fieldIndex("FS")));
+        MQ = getShort((Short) r.get(r.fieldIndex("MQ")));
+        QD = getShort((Short) r.get(r.fieldIndex("QD")));
+        qual = getInt((Integer) r.get(r.fieldIndex("QUAL")));
+        readPosRankSum = getFloat((Float) r.get(r.fieldIndex("ReadPosRankSum")));
+        mapQualRankSum = getFloat((Float) r.get(r.fieldIndex("MQRankSum")));
+        FILTER = r.getString(r.fieldIndex("FILTER"));
         samplePheno = pheno;
     }
 
@@ -53,47 +49,55 @@ public class Carrier extends NonCarrier {
         return f;
     }
 
+    private short getShort(Short s) {
+        if (s == null) {
+            return Data.SHORT_NA;
+        }
+
+        return s;
+    }
+    
+    private int getInt(Integer i) {
+        if (i == null) {
+            return Data.INTEGER_NA;
+        }
+
+        return i;
+    }
+
     public String getPercAltRead() {
-        return FormatManager.getFloat(MathManager.devide(readsAlt, gatkFilteredCoverage));
+        return FormatManager.getFloat(MathManager.devide(adAlt, DPbin));
     }
 
-    public int getGatkFilteredCoverage() {
-        return gatkFilteredCoverage;
+    public short getADRef() {
+        return adREF;
     }
 
-    public short getReadsRef() {
-        return readsRef;
-    }
-
-    public short getReadsAlt() {
-        return readsAlt;
+    public short getADAlt() {
+        return adAlt;
     }
 
     public float getVqslod() {
         return vqslod;
     }
 
-    public float getGenotypeQualGQ() {
-        return genotypeQualGQ;
+    public int getGQ() {
+        return GQ;
     }
 
-    public float getStrandBiasFS() {
-        return strandBiasFS;
+    public float getFS() {
+        return FS;
     }
 
-    public float getHaplotypeScore() {
-        return haplotypeScore;
+    public short getMQ() {
+        return MQ;
     }
 
-    public float getRmsMapQualMQ() {
-        return rmsMapQualMQ;
+    public short getQD() {
+        return QD;
     }
 
-    public float getQualByDepthQD() {
-        return qualByDepthQD;
-    }
-
-    public float getQual() {
+    public int getQual() {
         return qual;
     }
 
@@ -106,6 +110,6 @@ public class Carrier extends NonCarrier {
     }
 
     public String getPassFailStatus() {
-        return passFailStatus;
+        return FILTER;
     }
 }
